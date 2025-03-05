@@ -136,7 +136,7 @@ Distribuido bajo licencia MIT. Ver `LICENSE` para más detalles.
 
 ## ✉ Contacto
 
-Juan Pérez - [juan.perez@clinicanutricional.cl](mailto:juan.perez@clinicanutricional.cl)
+Simón Aguilera - [thesimonaguilera@gmail.com](mailto:thesimonaguilera@gmail.com)
 
 ---
 

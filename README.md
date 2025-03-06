@@ -31,7 +31,7 @@ docker-compose --version
 
 1. Clonar repositorio:
 ```bash
-git clone https://github.com/tu-usuario/ficha-medica-digital.git
+git clone https://github.com/nomad3/ficha-medica-digital.git
 cd ficha-medica-digital
 ```
 

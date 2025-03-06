@@ -7,4 +7,11 @@ SQLALCHEMY_DATABASE_URL = "postgresql://salud_user:salud_pass@db:5432/salud_db"
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-Base = declarative_base() 
+Base = declarative_base()
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close() 

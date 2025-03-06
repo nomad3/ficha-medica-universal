@@ -11,15 +11,22 @@ services:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U salud_user -d salud_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   backend:
     build: ./backend
+    command: sh -c "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port 8000"
     ports:
       - "8000:8000"
     environment:
       DATABASE_URL: postgresql://salud_user:salud_pass@db:5432/salud_db
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   frontend:
     build: ./frontend
@@ -29,6 +36,15 @@ services:
       - backend
     environment:
       - NODE_ENV=development
+
+  migrations:
+    build: ./backend
+    command: alembic upgrade head
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://salud_user:salud_pass@db:5432/salud_db
 
 volumes:
   postgres_data: 

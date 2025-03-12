@@ -118,7 +118,7 @@ El sistema implementa completamente el estándar HL7 FHIR, permitiendo:
 
 1. Clonar repositorio:
 ```bash
-git clone https://github.com/tu-usuario/ficha-medica-suplementos.git
+git clone https://github.com/nomad3/ficha-medica-suplementos.git
 cd ficha-medica-suplementos
 ```
 

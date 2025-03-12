@@ -204,15 +204,21 @@ def listar_pacientes_fhir(db: Session = Depends(get_db)):
     
     return resultado
 
-@app.get("/fhir/Patient/{rut}", response_model=FHIRPatient)
-def obtener_paciente_fhir(rut: str, db: Session = Depends(get_db)):
-    """Endpoint para obtener paciente en formato FHIR"""
-    paciente = db.query(models.Paciente).filter(models.Paciente.rut == rut).first()
+@app.get("/fhir/Patient/{id_or_rut}", response_model=FHIRPatient)
+def obtener_paciente_fhir(id_or_rut: str, db: Session = Depends(get_db)):
+    """Endpoint para obtener un paciente en formato FHIR por ID o RUT"""
+    # Intentar buscar por ID numérico
+    if id_or_rut.isdigit():
+        paciente = db.query(models.Paciente).filter(models.Paciente.id == int(id_or_rut)).first()
+    else:
+        # Si no es numérico, buscar por RUT
+        paciente = db.query(models.Paciente).filter(models.Paciente.rut == id_or_rut).first()
+    
     if not paciente:
         raise HTTPException(status_code=404, detail="Paciente no encontrado")
     
     # Convertir a formato FHIR
-    fhir_patient = {
+    patient_resource = {
         "resourceType": "Patient",
         "id": str(paciente.id),
         "identifier": [
@@ -242,11 +248,6 @@ def obtener_paciente_fhir(rut: str, db: Session = Depends(get_db)):
         ],
         "contact": [
             {
-                "relationship": [
-                    {
-                        "text": "Contacto de emergencia"
-                    }
-                ],
                 "name": {
                     "text": paciente.contacto_emergencia
                 }
@@ -254,7 +255,7 @@ def obtener_paciente_fhir(rut: str, db: Session = Depends(get_db)):
         ]
     }
     
-    return fhir_patient
+    return patient_resource
 
 @app.post("/fhir/Patient", status_code=201)
 def crear_paciente_fhir(patient: FHIRPatient, db: Session = Depends(get_db)):

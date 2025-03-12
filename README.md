@@ -247,12 +247,199 @@ curl -X POST http://localhost:8000/fhir/import \
   }'
 ```
 
+### Registrar suplemento y valores bioquímicos (FHIR)
+```bash
+curl -X POST http://localhost:8000/fhir/import \
+  -H "Content-Type: application/json" \
+  -d '{
+    "resourceType": "Bundle",
+    "type": "transaction",
+    "entry": [
+      {
+        "resource": {
+          "resourceType": "MedicationStatement",
+          "status": "active",
+          "medicationCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://suplementos.cl/codigo",
+                "code": "Omega3",
+                "display": "Omega3"
+              }
+            ],
+            "text": "Omega3"
+          },
+          "subject": {
+            "reference": "Patient/1"
+          },
+          "effectivePeriod": {
+            "start": "2023-06-15"
+          },
+          "dosage": [
+            {
+              "text": "1000mg diario"
+            }
+          ],
+          "note": [
+            {
+              "text": "Paciente reporta mejor estado de ánimo"
+            }
+          ]
+        }
+      },
+      {
+        "resource": {
+          "resourceType": "Observation",
+          "status": "final",
+          "code": {
+            "coding": [
+              {
+                "system": "http://loinc.org",
+                "code": "2093-3",
+                "display": "Colesterol total"
+              }
+            ]
+          },
+          "subject": {
+            "reference": "Patient/1"
+          },
+          "effectiveDateTime": "2023-06-15",
+          "valueQuantity": {
+            "value": 185,
+            "unit": "mg/dL",
+            "system": "http://unitsofmeasure.org",
+            "code": "mg/dL"
+          }
+        }
+      },
+      {
+        "resource": {
+          "resourceType": "Observation",
+          "status": "final",
+          "code": {
+            "coding": [
+              {
+                "system": "http://loinc.org",
+                "code": "2571-8",
+                "display": "Triglicéridos"
+              }
+            ]
+          },
+          "subject": {
+            "reference": "Patient/1"
+          },
+          "effectiveDateTime": "2023-06-15",
+          "valueQuantity": {
+            "value": 120,
+            "unit": "mg/dL",
+            "system": "http://unitsofmeasure.org",
+            "code": "mg/dL"
+          }
+        }
+      }
+    ]
+  }'
+```
+
+### Obtener observaciones de un paciente (FHIR)
+```bash
+curl -X GET http://localhost:8000/fhir/Observation/1
+```
+
+### Obtener historial de suplementos (FHIR)
+```bash
+curl -X GET http://localhost:8000/fhir/MedicationStatement/1
+```
+
 ### Obtener ficha completa en formato FHIR
 ```bash
 curl -X GET http://localhost:8000/fhir/Patient/12.345.678-9/complete
 ```
 
-## 🔄 Interoperabilidad
+### Importar datos desde otro sistema (FHIR)
+```bash
+curl -X POST http://localhost:8000/fhir/import \
+  -H "Content-Type: application/json" \
+  -d '{
+    "resourceType": "Bundle",
+    "type": "transaction",
+    "entry": [
+      {
+        "resource": {
+          "resourceType": "Patient",
+          "identifier": [
+            {
+              "system": "http://minsal.cl/rut",
+              "value": "11.222.333-4"
+            }
+          ],
+          "name": [
+            {
+              "family": "Soto",
+              "given": ["Carlos"]
+            }
+          ],
+          "gender": "male",
+          "birthDate": "1970-03-25"
+        }
+      },
+      {
+        "resource": {
+          "resourceType": "MedicationStatement",
+          "status": "active",
+          "medicationCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://suplementos.cl/codigo",
+                "code": "VitaminaD",
+                "display": "Vitamina D"
+              }
+            ],
+            "text": "Vitamina D"
+          },
+          "subject": {
+            "reference": "Patient/11.222.333-4"
+          },
+          "effectivePeriod": {
+            "start": "2023-01-10"
+          },
+          "dosage": [
+            {
+              "text": "2000 UI diario"
+            }
+          ]
+        }
+      },
+      {
+        "resource": {
+          "resourceType": "Observation",
+          "status": "final",
+          "code": {
+            "coding": [
+              {
+                "system": "http://loinc.org",
+                "code": "1989-3",
+                "display": "Vitamina D"
+              }
+            ]
+          },
+          "subject": {
+            "reference": "Patient/11.222.333-4"
+          },
+          "effectiveDateTime": "2023-01-10",
+          "valueQuantity": {
+            "value": 25,
+            "unit": "ng/mL",
+            "system": "http://unitsofmeasure.org",
+            "code": "ng/mL"
+          }
+        }
+      }
+    ]
+  }'
+```
+
+## �� Interoperabilidad
 
 El sistema implementa completamente el estándar HL7 FHIR, permitiendo:
 

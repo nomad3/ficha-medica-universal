@@ -1,11 +1,11 @@
 # Sistema de Ficha Médica Digital con Seguimiento de Suplementos Nutricionales
 
+![AI](https://img.shields.io/badge/IA-Integrada-purple)
+![FHIR](https://img.shields.io/badge/Interoperabilidad-HL7%20FHIR-orange)
 ![Docker](https://img.shields.io/badge/Docker-Containers-blue)
 ![FastAPI](https://img.shields.io/badge/Backend-FastAPI-green)
 ![React](https://img.shields.io/badge/Frontend-React-61DAFB)
 ![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-blue)
-![FHIR](https://img.shields.io/badge/Interoperabilidad-HL7%20FHIR-orange)
-![AI](https://img.shields.io/badge/IA-Integrada-purple)
 
 Sistema integral para la gestión de fichas médicas electrónicas con seguimiento de suplementos nutricionales, diseñado para monitorear el impacto de suplementos como Omega-3 y multivitamínicos en los niveles bioquímicos de los pacientes. Implementa completamente el estándar HL7 FHIR para interoperabilidad entre instituciones de salud y utiliza inteligencia artificial para optimizar tratamientos y predecir resultados.
 
@@ -45,6 +45,23 @@ El sistema incorpora múltiples capacidades de IA para mejorar la toma de decisi
 - **Beneficios**: Maximiza efectividad de suplementos y minimiza interacciones negativas.
 - **Endpoint**: `/ai/optimizacion-suplementos`
 - **Características**: Incluye dosis recomendadas, frecuencia, momento óptimo de ingesta y justificación científica.
+
+## 🔄 Interoperabilidad
+
+El sistema implementa completamente el estándar HL7 FHIR, permitiendo:
+
+- Exportar datos a otros sistemas de salud
+- Importar datos desde sistemas externos
+- Compatibilidad con aplicaciones móviles y portales de pacientes
+- Integración con sistemas nacionales de salud
+
+## 🤖 Tecnologías de IA Utilizadas
+
+- **OpenAI GPT-4**: Para generación de recomendaciones personalizadas y planes de suplementación
+- **Scikit-learn**: Para análisis predictivo y detección de anomalías
+- **Pandas/NumPy**: Para procesamiento y análisis de datos biomédicos
+- **Regresión lineal**: Para proyección de tendencias en biomarcadores
+- **Algoritmos de detección de valores atípicos**: Para identificar anomalías en valores bioquímicos
 
 ## 🛠 Requisitos Previos
 
@@ -441,23 +458,6 @@ curl -X POST http://localhost:8000/ai/optimizacion-suplementos \
     "objetivo": "Mejorar perfil lipídico"
   }'
 ```
-
-## 🔄 Interoperabilidad
-
-El sistema implementa completamente el estándar HL7 FHIR, permitiendo:
-
-- Exportar datos a otros sistemas de salud
-- Importar datos desde sistemas externos
-- Compatibilidad con aplicaciones móviles y portales de pacientes
-- Integración con sistemas nacionales de salud
-
-## 🤖 Tecnologías de IA Utilizadas
-
-- **OpenAI GPT-4**: Para generación de recomendaciones personalizadas y planes de suplementación
-- **Scikit-learn**: Para análisis predictivo y detección de anomalías
-- **Pandas/NumPy**: Para procesamiento y análisis de datos biomédicos
-- **Regresión lineal**: Para proyección de tendencias en biomarcadores
-- **Algoritmos de detección de valores atípicos**: Para identificar anomalías en valores bioquímicos
 
 ## 🤝 Contribución
 

@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from sqlalchemy.orm import Session
 from database import get_db, engine
 import models
@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import event
 from sqlalchemy.exc import OperationalError
 import time
+from datetime import datetime
 
 # Definir modelos Pydantic primero
 class PacienteBase(BaseModel):
@@ -48,6 +49,27 @@ class HistorialMedicoBase(BaseModel):
     vitamina_d: int
     omega3_indice: int
     observaciones: str
+
+# Modelos FHIR
+class FHIRPatient(BaseModel):
+    resourceType: str = "Patient"
+    id: str
+    identifier: List[Dict[str, Any]]
+    name: List[Dict[str, Any]]
+    gender: str
+    birthDate: str
+    telecom: Optional[List[Dict[str, Any]]] = None
+    address: Optional[List[Dict[str, Any]]] = None
+    contact: Optional[List[Dict[str, Any]]] = None
+
+class FHIRObservation(BaseModel):
+    resourceType: str = "Observation"
+    id: str
+    status: str = "final"
+    code: Dict[str, Any]
+    subject: Dict[str, Any]
+    effectiveDateTime: str
+    valueQuantity: Dict[str, Any]
 
 # Crear instancia de FastAPI después de los modelos
 app = FastAPI(title="API Ficha Médica Nutricional")
@@ -112,4 +134,124 @@ def crear_registro_historial(
     db.add(db_historial)
     db.commit()
     db.refresh(db_historial)
-    return db_historial 
+    return db_historial
+
+# Endpoints FHIR
+@app.get("/fhir/Patient/{rut}", response_model=FHIRPatient)
+def obtener_paciente_fhir(rut: str, db: Session = Depends(get_db)):
+    """Endpoint para obtener paciente en formato FHIR"""
+    paciente = db.query(models.Paciente).filter(models.Paciente.rut == rut).first()
+    if not paciente:
+        raise HTTPException(status_code=404, detail="Paciente no encontrado")
+    
+    # Convertir a formato FHIR
+    fhir_patient = {
+        "resourceType": "Patient",
+        "id": str(paciente.id),
+        "identifier": [
+            {
+                "system": "http://minsal.cl/rut",
+                "value": paciente.rut
+            }
+        ],
+        "name": [
+            {
+                "family": paciente.apellido,
+                "given": [paciente.nombre]
+            }
+        ],
+        "gender": "male" if paciente.sexo.lower() == "masculino" else "female",
+        "birthDate": paciente.fecha_nacimiento,
+        "telecom": [
+            {
+                "system": "phone",
+                "value": paciente.telefono
+            }
+        ],
+        "address": [
+            {
+                "text": paciente.direccion
+            }
+        ],
+        "contact": [
+            {
+                "relationship": [
+                    {
+                        "text": "Contacto de emergencia"
+                    }
+                ],
+                "name": {
+                    "text": paciente.contacto_emergencia
+                }
+            }
+        ]
+    }
+    
+    return fhir_patient
+
+@app.get("/fhir/Observation/{paciente_id}", response_model=List[FHIRObservation])
+def obtener_observaciones_fhir(paciente_id: int, db: Session = Depends(get_db)):
+    """Endpoint para obtener observaciones en formato FHIR"""
+    historial = db.query(models.HistorialMedico).filter(models.HistorialMedico.paciente_id == paciente_id).all()
+    if not historial:
+        return []
+    
+    observaciones = []
+    for registro in historial:
+        # Observación para colesterol
+        if registro.colesterol_total:
+            obs_colesterol = {
+                "resourceType": "Observation",
+                "id": f"col-{registro.id}",
+                "status": "final",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "http://loinc.org",
+                            "code": "2093-3",
+                            "display": "Colesterol total"
+                        }
+                    ]
+                },
+                "subject": {
+                    "reference": f"Patient/{paciente_id}"
+                },
+                "effectiveDateTime": registro.fecha_inicio,
+                "valueQuantity": {
+                    "value": registro.colesterol_total,
+                    "unit": "mg/dL",
+                    "system": "http://unitsofmeasure.org",
+                    "code": "mg/dL"
+                }
+            }
+            observaciones.append(obs_colesterol)
+        
+        # Observación para triglicéridos
+        if registro.trigliceridos:
+            obs_trigliceridos = {
+                "resourceType": "Observation",
+                "id": f"trig-{registro.id}",
+                "status": "final",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "http://loinc.org",
+                            "code": "2571-8",
+                            "display": "Triglicéridos"
+                        }
+                    ]
+                },
+                "subject": {
+                    "reference": f"Patient/{paciente_id}"
+                },
+                "effectiveDateTime": registro.fecha_inicio,
+                "valueQuantity": {
+                    "value": registro.trigliceridos,
+                    "unit": "mg/dL",
+                    "system": "http://unitsofmeasure.org",
+                    "code": "mg/dL"
+                }
+            }
+            observaciones.append(obs_trigliceridos)
+    
+    return observaciones 

@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import SupplementHistoryForm from './SupplementHistoryForm';
 import SupplementHistoryList from './SupplementHistoryList';
+import FHIRViewer from './FHIRViewer';
 
 const PacienteDetail = () => {
   const { id } = useParams();
@@ -41,6 +42,7 @@ const PacienteDetail = () => {
       <Link to="/">Volver al listado</Link>
       <SupplementHistoryForm pacienteId={id} />
       <SupplementHistoryList data={historial} />
+      <FHIRViewer pacienteId={id} rut={paciente.rut} />
     </div>
   );
 };

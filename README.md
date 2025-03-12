@@ -4,8 +4,9 @@
 ![FastAPI](https://img.shields.io/badge/Backend-FastAPI-green)
 ![React](https://img.shields.io/badge/Frontend-React-61DAFB)
 ![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-blue)
+![FHIR](https://img.shields.io/badge/Interoperabilidad-HL7%20FHIR-orange)
 
-Sistema integral para la gestión de fichas médicas electrónicas con seguimiento de suplementos nutricionales, diseñado para monitorear el impacto de suplementos como Omega-3 y multivitamínicos en los niveles bioquímicos de los pacientes.
+Sistema integral para la gestión de fichas médicas electrónicas con seguimiento de suplementos nutricionales, diseñado para monitorear el impacto de suplementos como Omega-3 y multivitamínicos en los niveles bioquímicos de los pacientes. Compatible con estándares HL7 FHIR para interoperabilidad entre instituciones de salud.
 
 ## 📌 Características Principales
 
@@ -14,8 +15,9 @@ Sistema integral para la gestión de fichas médicas electrónicas con seguimien
 - **Monitoreo de biomarcadores** (colesterol, triglicéridos, vitamina D, índice omega-3)
 - **Arquitectura moderna** con API REST, React y PostgreSQL
 - **Despliegue simplificado** mediante contenedores Docker
+- **Interoperabilidad HL7 FHIR** para conectividad con sistemas nacionales e internacionales
 
-## 🚀 Requisitos Previos
+## �� Requisitos Previos
 
 - Docker 20.10+
 - Docker Compose 2.0+
@@ -49,6 +51,8 @@ docker-compose up --build
 | POST | `/pacientes/` | Crear nuevo paciente |
 | PUT | `/pacientes/{id}` | Actualizar datos de paciente |
 | DELETE | `/pacientes/{id}` | Eliminar paciente |
+| GET | `/fhir/Patient/{rut}` | Obtener paciente en formato FHIR |
+| GET | `/fhir/Observation/{paciente_id}` | Obtener observaciones FHIR |
 
 ### Endpoints de Historial Médico
 

@@ -4,6 +4,10 @@ import axios from 'axios';
 import SupplementHistoryForm from './SupplementHistoryForm';
 import SupplementHistoryList from './SupplementHistoryList';
 import FHIRViewer from './FHIRViewer';
+import AIRecommendations from './AIRecommendations';
+import PredictiveTrends from './PredictiveTrends';
+import AnomalyDetection from './AnomalyDetection';
+import SupplementOptimization from './SupplementOptimization';
 
 const PacienteDetail = () => {
   const { id } = useParams();
@@ -12,6 +16,7 @@ const PacienteDetail = () => {
   const [medicamentos, setMedicamentos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState('historial');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -56,26 +61,92 @@ const PacienteDetail = () => {
     paciente.contact[0].name.text : 'No disponible';
 
   return (
-    <div>
-      <h2>Ficha Clínica: {nombre} {apellido}</h2>
-      <p>RUT: {rut}</p>
-      <p>Fecha Nacimiento: {fechaNacimiento}</p>
-      <p>Contacto Emergencia: {contactoEmergencia}</p>
-      <Link to="/">Volver al listado</Link>
+    <div className="paciente-detail">
+      <div className="paciente-header">
+        <h2>Ficha Clínica: {nombre} {apellido}</h2>
+        <div className="paciente-info">
+          <p><strong>RUT:</strong> {rut}</p>
+          <p><strong>Fecha Nacimiento:</strong> {fechaNacimiento}</p>
+          <p><strong>Contacto Emergencia:</strong> {contactoEmergencia}</p>
+        </div>
+        <Link to="/" className="btn-back">Volver al listado</Link>
+      </div>
       
-      <SupplementHistoryForm pacienteId={id} />
+      <div className="tabs">
+        <button 
+          className={activeTab === 'historial' ? 'active' : ''} 
+          onClick={() => setActiveTab('historial')}
+        >
+          Historial de Suplementos
+        </button>
+        <button 
+          className={activeTab === 'recomendaciones' ? 'active' : ''} 
+          onClick={() => setActiveTab('recomendaciones')}
+        >
+          Recomendaciones IA
+        </button>
+        <button 
+          className={activeTab === 'predicciones' ? 'active' : ''} 
+          onClick={() => setActiveTab('predicciones')}
+        >
+          Análisis Predictivo
+        </button>
+        <button 
+          className={activeTab === 'anomalias' ? 'active' : ''} 
+          onClick={() => setActiveTab('anomalias')}
+        >
+          Detección de Anomalías
+        </button>
+        <button 
+          className={activeTab === 'optimizacion' ? 'active' : ''} 
+          onClick={() => setActiveTab('optimizacion')}
+        >
+          Plan Óptimo
+        </button>
+        <button 
+          className={activeTab === 'fhir' ? 'active' : ''} 
+          onClick={() => setActiveTab('fhir')}
+        >
+          Datos FHIR
+        </button>
+      </div>
       
-      {medicamentos && medicamentos.length > 0 ? (
-        <SupplementHistoryList data={medicamentos} />
-      ) : (
-        <p>No hay registros de suplementos</p>
-      )}
-      
-      <FHIRViewer 
-        paciente={paciente} 
-        observaciones={observaciones || []} 
-        medicamentos={medicamentos || []} 
-      />
+      <div className="tab-content">
+        {activeTab === 'historial' && (
+          <div>
+            <SupplementHistoryForm pacienteId={id} />
+            {medicamentos && medicamentos.length > 0 ? (
+              <SupplementHistoryList data={medicamentos} />
+            ) : (
+              <p>No hay registros de suplementos</p>
+            )}
+          </div>
+        )}
+        
+        {activeTab === 'recomendaciones' && (
+          <AIRecommendations pacienteId={id} />
+        )}
+        
+        {activeTab === 'predicciones' && (
+          <PredictiveTrends pacienteId={id} />
+        )}
+        
+        {activeTab === 'anomalias' && (
+          <AnomalyDetection pacienteId={id} />
+        )}
+        
+        {activeTab === 'optimizacion' && (
+          <SupplementOptimization pacienteId={id} />
+        )}
+        
+        {activeTab === 'fhir' && (
+          <FHIRViewer 
+            paciente={paciente} 
+            observaciones={observaciones || []} 
+            medicamentos={medicamentos || []} 
+          />
+        )}
+      </div>
     </div>
   );
 };

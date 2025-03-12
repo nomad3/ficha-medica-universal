@@ -5,8 +5,9 @@
 ![React](https://img.shields.io/badge/Frontend-React-61DAFB)
 ![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-blue)
 ![FHIR](https://img.shields.io/badge/Interoperabilidad-HL7%20FHIR-orange)
+![AI](https://img.shields.io/badge/IA-Integrada-purple)
 
-Sistema integral para la gestión de fichas médicas electrónicas con seguimiento de suplementos nutricionales, diseñado para monitorear el impacto de suplementos como Omega-3 y multivitamínicos en los niveles bioquímicos de los pacientes. Implementa completamente el estándar HL7 FHIR para interoperabilidad entre instituciones de salud.
+Sistema integral para la gestión de fichas médicas electrónicas con seguimiento de suplementos nutricionales, diseñado para monitorear el impacto de suplementos como Omega-3 y multivitamínicos en los niveles bioquímicos de los pacientes. Implementa completamente el estándar HL7 FHIR para interoperabilidad entre instituciones de salud y utiliza inteligencia artificial para optimizar tratamientos y predecir resultados.
 
 ## 📌 Características Principales
 
@@ -16,6 +17,34 @@ Sistema integral para la gestión de fichas médicas electrónicas con seguimien
 - **Arquitectura moderna** con API REST, React y PostgreSQL
 - **Despliegue simplificado** mediante contenedores Docker
 - **Interoperabilidad HL7 FHIR** para conectividad con sistemas nacionales e internacionales
+- **Inteligencia Artificial integrada** para análisis predictivo y recomendaciones personalizadas
+
+## 🧠 Funcionalidades de Inteligencia Artificial
+
+El sistema incorpora múltiples capacidades de IA para mejorar la toma de decisiones clínicas:
+
+### 1. Recomendaciones Personalizadas
+- **Descripción**: Analiza el perfil completo del paciente y su historial para generar recomendaciones específicas.
+- **Beneficios**: Sugerencias adaptadas a las necesidades individuales basadas en evidencia científica.
+- **Endpoint**: `/ai/recomendaciones`
+
+### 2. Análisis Predictivo de Biomarcadores
+- **Descripción**: Predice la evolución de valores bioquímicos (colesterol, triglicéridos, etc.) basándose en tendencias históricas y suplementación actual.
+- **Beneficios**: Anticipa resultados y permite ajustar tratamientos proactivamente.
+- **Endpoint**: `/ai/prediccion-tendencias`
+- **Visualización**: Gráficos de tendencias y proyecciones a 30, 90 o 180 días.
+
+### 3. Detección de Anomalías
+- **Descripción**: Identifica valores fuera de rango normal y patrones inusuales en biomarcadores.
+- **Beneficios**: Alerta temprana sobre posibles problemas de salud o interacciones negativas.
+- **Endpoint**: `/ai/deteccion-anomalias`
+- **Algoritmo**: Utiliza técnicas de detección de valores atípicos adaptadas a parámetros bioquímicos.
+
+### 4. Optimización de Planes de Suplementación
+- **Descripción**: Genera planes personalizados de suplementación basados en objetivos de salud y biomarcadores actuales.
+- **Beneficios**: Maximiza efectividad de suplementos y minimiza interacciones negativas.
+- **Endpoint**: `/ai/optimizacion-suplementos`
+- **Características**: Incluye dosis recomendadas, frecuencia, momento óptimo de ingesta y justificación científica.
 
 ## 🛠 Requisitos Previos
 
@@ -31,12 +60,17 @@ git clone https://github.com/tu-usuario/ficha-medica-suplementos.git
 cd ficha-medica-suplementos
 ```
 
-2. Iniciar servicios:
+2. Configurar API key para OpenAI (requerido para funciones de IA):
+```bash
+echo "OPENAI_API_KEY=tu_api_key" > .env
+```
+
+3. Iniciar servicios:
 ```bash
 docker-compose up --build
 ```
 
-3. Acceder a:
+4. Acceder a:
    - Frontend: http://localhost:3000
    - API Docs: http://localhost:8000/docs
 
@@ -52,6 +86,15 @@ docker-compose up --build
 | GET | `/fhir/MedicationStatement/{paciente_id}` | Obtener historial de suplementos |
 | GET | `/fhir/Patient/{rut}/complete` | Obtener ficha completa (Bundle) |
 | POST | `/fhir/import` | Importar datos desde otros sistemas |
+
+### Endpoints de IA
+
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| POST | `/ai/recomendaciones` | Obtener recomendaciones personalizadas |
+| POST | `/ai/prediccion-tendencias` | Predecir evolución de biomarcadores |
+| POST | `/ai/deteccion-anomalias` | Detectar valores anómalos |
+| POST | `/ai/optimizacion-suplementos` | Generar plan óptimo de suplementación |
 
 ### Recursos FHIR Implementados
 
@@ -163,11 +206,11 @@ docker-compose up --build
 ```
 ficha-medica-suplementos/
 ├── backend/
-│   ├── main.py            # API FHIR y endpoints
+│   ├── main.py            # API FHIR, endpoints IA y lógica de negocio
 │   ├── models.py          # Modelos SQLAlchemy
 │   ├── database.py        # Configuración de base de datos
 │   ├── create_tables.py   # Script de inicialización
-│   └── requirements.txt   # Dependencias Python (incluye fhir.resources)
+│   └── requirements.txt   # Dependencias Python (incluye fhir.resources, openai, scikit-learn)
 │
 ├── frontend/
 │   ├── src/
@@ -176,7 +219,11 @@ ficha-medica-suplementos/
 │   │   │   ├── PacienteDetail.jsx         # Detalle de paciente FHIR
 │   │   │   ├── SupplementHistoryForm.jsx  # Formulario FHIR
 │   │   │   ├── SupplementHistoryList.jsx  # Historial FHIR
-│   │   │   └── FHIRViewer.jsx             # Visualizador de recursos FHIR
+│   │   │   ├── FHIRViewer.jsx             # Visualizador de recursos FHIR
+│   │   │   ├── AIRecommendations.jsx      # Recomendaciones IA
+│   │   │   ├── PredictiveTrends.jsx       # Análisis predictivo
+│   │   │   ├── AnomalyDetection.jsx       # Detección de anomalías
+│   │   │   └── SupplementOptimization.jsx # Optimización de suplementos
 │   │   └── App.js         # Rutas principales
 │   └── Dockerfile         # Configuración frontend
 │
@@ -356,90 +403,46 @@ curl -X GET http://localhost:8000/fhir/MedicationStatement/1
 curl -X GET http://localhost:8000/fhir/Patient/12.345.678-9/complete
 ```
 
-### Importar datos desde otro sistema (FHIR)
+### Solicitar recomendaciones personalizadas (IA)
 ```bash
-curl -X POST http://localhost:8000/fhir/import \
+curl -X POST http://localhost:8000/ai/recomendaciones \
   -H "Content-Type: application/json" \
   -d '{
-    "resourceType": "Bundle",
-    "type": "transaction",
-    "entry": [
-      {
-        "resource": {
-          "resourceType": "Patient",
-          "identifier": [
-            {
-              "system": "http://minsal.cl/rut",
-              "value": "11.222.333-4"
-            }
-          ],
-          "name": [
-            {
-              "family": "Soto",
-              "given": ["Carlos"]
-            }
-          ],
-          "gender": "male",
-          "birthDate": "1970-03-25"
-        }
-      },
-      {
-        "resource": {
-          "resourceType": "MedicationStatement",
-          "status": "active",
-          "medicationCodeableConcept": {
-            "coding": [
-              {
-                "system": "http://suplementos.cl/codigo",
-                "code": "VitaminaD",
-                "display": "Vitamina D"
-              }
-            ],
-            "text": "Vitamina D"
-          },
-          "subject": {
-            "reference": "Patient/11.222.333-4"
-          },
-          "effectivePeriod": {
-            "start": "2023-01-10"
-          },
-          "dosage": [
-            {
-              "text": "2000 UI diario"
-            }
-          ]
-        }
-      },
-      {
-        "resource": {
-          "resourceType": "Observation",
-          "status": "final",
-          "code": {
-            "coding": [
-              {
-                "system": "http://loinc.org",
-                "code": "1989-3",
-                "display": "Vitamina D"
-              }
-            ]
-          },
-          "subject": {
-            "reference": "Patient/11.222.333-4"
-          },
-          "effectiveDateTime": "2023-01-10",
-          "valueQuantity": {
-            "value": 25,
-            "unit": "ng/mL",
-            "system": "http://unitsofmeasure.org",
-            "code": "ng/mL"
-          }
-        }
-      }
-    ]
+    "paciente_id": 1
   }'
 ```
 
-## �� Interoperabilidad
+### Predecir tendencia de biomarcador (IA)
+```bash
+curl -X POST http://localhost:8000/ai/prediccion-tendencias \
+  -H "Content-Type: application/json" \
+  -d '{
+    "paciente_id": 1,
+    "biomarcador": "colesterol_total",
+    "dias_prediccion": 90
+  }'
+```
+
+### Detectar anomalías en biomarcadores (IA)
+```bash
+curl -X POST http://localhost:8000/ai/deteccion-anomalias \
+  -H "Content-Type: application/json" \
+  -d '{
+    "paciente_id": 1
+  }'
+```
+
+### Generar plan óptimo de suplementación (IA)
+```bash
+curl -X POST http://localhost:8000/ai/optimizacion-suplementos \
+  -H "Content-Type: application/json" \
+  -d '{
+    "paciente_id": 1,
+    "objetivo": "Mejorar perfil lipídico"
+  }'
+```
+
+## 🔄 Interoperabilidad
 
 El sistema implementa completamente el estándar HL7 FHIR, permitiendo:
 
@@ -447,6 +450,14 @@ El sistema implementa completamente el estándar HL7 FHIR, permitiendo:
 - Importar datos desde sistemas externos
 - Compatibilidad con aplicaciones móviles y portales de pacientes
 - Integración con sistemas nacionales de salud
+
+## 🤖 Tecnologías de IA Utilizadas
+
+- **OpenAI GPT-4**: Para generación de recomendaciones personalizadas y planes de suplementación
+- **Scikit-learn**: Para análisis predictivo y detección de anomalías
+- **Pandas/NumPy**: Para procesamiento y análisis de datos biomédicos
+- **Regresión lineal**: Para proyección de tendencias en biomarcadores
+- **Algoritmos de detección de valores atípicos**: Para identificar anomalías en valores bioquímicos
 
 ## 🤝 Contribución
 
@@ -466,4 +477,4 @@ Simón Aguilera - [thesimonaguilera@gmail.com](mailto:thesimonaguilera@gmail.com
 
 ---
 
-_⚠️ Importante: Este sistema está diseñado para fines educativos y de investigación. Para uso clínico real, se requieren validaciones adicionales y cumplimiento con normativas de salud locales._
+_⚠️ Importante: Este sistema está diseñado para fines educativos y de investigación. Para uso clínico real, se requieren validaciones adicionales y cumplimiento con normativas de salud locales. Las recomendaciones generadas por IA deben ser revisadas por profesionales de la salud antes de su implementación._

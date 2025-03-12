@@ -18,6 +18,7 @@ Sistema integral para la gestión de fichas médicas electrónicas con seguimien
 - **Despliegue simplificado** mediante contenedores Docker
 - **Interoperabilidad HL7 FHIR** para conectividad con sistemas nacionales e internacionales
 - **Inteligencia Artificial integrada** para análisis predictivo y recomendaciones personalizadas
+- **Asesor Virtual** para consultas programáticas a la API
 
 ## 🧠 Funcionalidades de Inteligencia Artificial
 
@@ -45,6 +46,50 @@ El sistema incorpora múltiples capacidades de IA para mejorar la toma de decisi
 - **Beneficios**: Maximiza efectividad de suplementos y minimiza interacciones negativas.
 - **Endpoint**: `/ai/optimizacion-suplementos`
 - **Características**: Incluye dosis recomendadas, frecuencia, momento óptimo de ingesta y justificación científica.
+
+## 🤖 Asesor Virtual (asesor_virtual.py)
+
+El sistema incluye un módulo de Asesor Virtual que permite interactuar programáticamente con la API:
+
+### Clases Principales
+
+#### AsesorNutricional
+Cliente que consume los endpoints de IA para generar recomendaciones y análisis.
+
+```python
+# Ejemplo de uso
+asesor = AsesorNutricional()
+recomendaciones = asesor.generar_recomendacion(paciente_id=1)
+```
+
+**Métodos disponibles:**
+- `generar_recomendacion(paciente_id)`: Obtiene recomendaciones personalizadas
+- `predecir_tendencias(paciente_id, biomarcador, dias_prediccion=90)`: Predice evolución de biomarcadores
+- `detectar_anomalias(paciente_id)`: Identifica valores anómalos en biomarcadores
+- `optimizar_suplementacion(paciente_id, objetivo=None)`: Genera plan optimizado de suplementación
+
+#### AsesorFHIR
+Cliente que consume los endpoints FHIR para interoperabilidad con otros sistemas.
+
+```python
+# Ejemplo de uso
+asesor_fhir = AsesorFHIR()
+paciente = asesor_fhir.obtener_paciente(rut="12.345.678-9")
+```
+
+**Métodos disponibles:**
+- `obtener_paciente(rut)`: Obtiene datos del paciente en formato FHIR
+- `obtener_observaciones(paciente_id)`: Obtiene observaciones clínicas en formato FHIR
+- `obtener_medicamentos(paciente_id)`: Obtiene historial de suplementos en formato FHIR
+- `obtener_ficha_completa(rut)`: Obtiene ficha completa del paciente como Bundle FHIR
+
+### Integración con Sistemas Externos
+
+El Asesor Virtual facilita la integración con sistemas externos mediante:
+- Consumo de API REST estándar
+- Manejo de errores y fallbacks
+- Formato de datos compatible con FHIR
+- Respuestas en formato JSON para fácil procesamiento
 
 ## 🔄 Interoperabilidad
 
@@ -244,6 +289,7 @@ ficha-medica-suplementos/
 │   │   └── App.js         # Rutas principales
 │   └── Dockerfile         # Configuración frontend
 │
+├── asesor_virtual.py      # Cliente Python para interactuar con la API
 └── docker-compose.yml     # Orquestación de servicios
 ```
 
@@ -457,6 +503,31 @@ curl -X POST http://localhost:8000/ai/optimizacion-suplementos \
     "paciente_id": 1,
     "objetivo": "Mejorar perfil lipídico"
   }'
+```
+
+### Uso del Asesor Virtual (Python)
+```python
+from asesor_virtual import AsesorNutricional, AsesorFHIR
+
+# Crear instancias
+asesor = AsesorNutricional()
+asesor_fhir = AsesorFHIR()
+
+# Obtener recomendaciones
+recomendaciones = asesor.generar_recomendacion(paciente_id=1)
+print(recomendaciones)
+
+# Predecir tendencias
+predicciones = asesor.predecir_tendencias(
+    paciente_id=1, 
+    biomarcador="colesterol_total", 
+    dias_prediccion=90
+)
+print(predicciones)
+
+# Obtener datos FHIR
+paciente = asesor_fhir.obtener_paciente(rut="12.345.678-9")
+observaciones = asesor_fhir.obtener_observaciones(paciente_id=1)
 ```
 
 ## 🤝 Contribución

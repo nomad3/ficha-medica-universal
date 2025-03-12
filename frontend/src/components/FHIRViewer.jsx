@@ -4,6 +4,7 @@ import axios from 'axios';
 const FHIRViewer = ({ pacienteId, rut }) => {
   const [fhirData, setFhirData] = useState(null);
   const [observations, setObservations] = useState([]);
+  const [medications, setMedications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -18,6 +19,10 @@ const FHIRViewer = ({ pacienteId, rut }) => {
         // Obtener observaciones en formato FHIR
         const observationsResponse = await axios.get(`http://localhost:8000/fhir/Observation/${pacienteId}`);
         setObservations(observationsResponse.data);
+        
+        // Obtener medicamentos/suplementos en formato FHIR
+        const medicationsResponse = await axios.get(`http://localhost:8000/fhir/MedicationStatement/${pacienteId}`);
+        setMedications(medicationsResponse.data);
         
         setLoading(false);
       } catch (err) {
@@ -52,6 +57,20 @@ const FHIRViewer = ({ pacienteId, rut }) => {
               <h5>{obs.code.coding[0].display}</h5>
               <p>Valor: {obs.valueQuantity.value} {obs.valueQuantity.unit}</p>
               <p>Fecha: {obs.effectiveDateTime}</p>
+            </div>
+          ))}
+        </div>
+      )}
+      
+      {medications.length > 0 && (
+        <div className="fhir-section">
+          <h4>Suplementos</h4>
+          {medications.map((med, index) => (
+            <div key={index} className="medication-card">
+              <h5>{med.medicationCodeableConcept.text}</h5>
+              <p>Dosis: {med.dosage[0].text}</p>
+              <p>Inicio: {med.effectivePeriod.start}</p>
+              {med.note && <p>Observaciones: {med.note[0].text}</p>}
             </div>
           ))}
         </div>

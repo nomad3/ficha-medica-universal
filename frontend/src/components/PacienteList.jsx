@@ -4,30 +4,46 @@ import { Link } from 'react-router-dom';
 
 const PacienteList = () => {
   const [pacientes, setPacientes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchPacientes = async () => {
       try {
-        const response = await axios.get('http://localhost:8000/pacientes/');
+        setLoading(true);
+        const response = await axios.get('http://localhost:8000/fhir/Patient');
         setPacientes(response.data);
+        setLoading(false);
       } catch (error) {
         console.error('Error fetching pacientes:', error);
+        setError('Error al cargar los pacientes');
+        setLoading(false);
       }
     };
     fetchPacientes();
   }, []);
 
+  if (loading) return <div>Cargando pacientes...</div>;
+  if (error) return <div className="error">{error}</div>;
+
   return (
     <div>
       <h2>Listado de Pacientes</h2>
       <ul>
-        {pacientes.map(paciente => (
-          <li key={paciente.id}>
-            <Link to={`/pacientes/${paciente.id}`}>
-              {paciente.nombre} {paciente.apellido} - RUT: {paciente.rut}
-            </Link>
-          </li>
-        ))}
+        {pacientes.map(paciente => {
+          const id = paciente.id;
+          const rut = paciente.identifier[0]?.value || '';
+          const nombre = paciente.name[0]?.given[0] || '';
+          const apellido = paciente.name[0]?.family || '';
+          
+          return (
+            <li key={id}>
+              <Link to={`/pacientes/${id}/${rut}`}>
+                {nombre} {apellido} - RUT: {rut}
+              </Link>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

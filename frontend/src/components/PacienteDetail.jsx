@@ -6,43 +6,64 @@ import SupplementHistoryList from './SupplementHistoryList';
 import FHIRViewer from './FHIRViewer';
 
 const PacienteDetail = () => {
-  const { id } = useParams();
+  const { id, rut } = useParams();
   const [paciente, setPaciente] = useState(null);
-  const [historial, setHistorial] = useState([]);
+  const [observaciones, setObservaciones] = useState([]);
+  const [medicamentos, setMedicamentos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchPaciente = async () => {
+    const fetchData = async () => {
       try {
-        const response = await axios.get(`http://localhost:8000/pacientes/${id}`);
-        if(response.data) {
-          setPaciente(response.data);
-        }
-      } catch (error) {
-        console.error('Error:', error.response?.data || error.message);
+        setLoading(true);
+        // Obtener datos del paciente en formato FHIR
+        const patientResponse = await axios.get(`http://localhost:8000/fhir/Patient/${rut}`);
+        setPaciente(patientResponse.data);
+        
+        // Obtener observaciones en formato FHIR
+        const observationsResponse = await axios.get(`http://localhost:8000/fhir/Observation/${id}`);
+        setObservaciones(observationsResponse.data);
+        
+        // Obtener medicamentos/suplementos en formato FHIR
+        const medicationsResponse = await axios.get(`http://localhost:8000/fhir/MedicationStatement/${id}`);
+        setMedicamentos(medicationsResponse.data);
+        
+        setLoading(false);
+      } catch (err) {
+        setError('Error al cargar datos del paciente');
+        setLoading(false);
+        console.error(err);
       }
     };
-    const fetchHistorial = async () => {
-      const response = await axios.get(`http://localhost:8000/pacientes/${id}/historial`);
-      setHistorial(response.data);
-    };
-    if(id) {
-      fetchPaciente();
-      fetchHistorial();
+    
+    if (rut && id) {
+      fetchData();
     }
-  }, [id]);
+  }, [rut, id]);
 
-  if (!paciente) return <div>Cargando...</div>;
+  if (loading) return <div>Cargando datos del paciente...</div>;
+  if (error) return <div className="error">{error}</div>;
+  if (!paciente) return null;
+
+  // Extraer datos del paciente del formato FHIR
+  const nombre = paciente.name[0]?.given[0] || '';
+  const apellido = paciente.name[0]?.family || '';
+  const fechaNacimiento = paciente.birthDate || '';
+  const contactoEmergencia = paciente.contact?.[0]?.name?.text || '';
 
   return (
     <div>
-      <h2>Ficha Clínica: {paciente.nombre} {paciente.apellido}</h2>
-      <p>RUT: {paciente.rut}</p>
-      <p>Fecha Nacimiento: {paciente.fecha_nacimiento}</p>
-      <p>Contacto Emergencia: {paciente.contacto_emergencia}</p>
+      <h2>Ficha Clínica: {nombre} {apellido}</h2>
+      <p>RUT: {paciente.identifier[0]?.value}</p>
+      <p>Fecha Nacimiento: {fechaNacimiento}</p>
+      <p>Contacto Emergencia: {contactoEmergencia}</p>
       <Link to="/">Volver al listado</Link>
+      
       <SupplementHistoryForm pacienteId={id} />
-      <SupplementHistoryList data={historial} />
-      <FHIRViewer pacienteId={id} rut={paciente.rut} />
+      <SupplementHistoryList data={medicamentos} />
+      
+      <FHIRViewer paciente={paciente} observaciones={observaciones} medicamentos={medicamentos} />
     </div>
   );
 };

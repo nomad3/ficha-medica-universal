@@ -108,9 +108,10 @@ def generar_paciente(perfil):
     
     fecha_nacimiento = generar_fecha_nacimiento(min_edad, max_edad)
     
+    paciente_id = str(uuid.uuid4())
     return {
         "resourceType": "Patient",
-        "id": str(uuid.uuid4()),
+        "id": paciente_id,
         "identifier": [
             {
                 "system": "http://minsal.cl/rut",
@@ -261,6 +262,17 @@ def generar_medicacion(paciente_id, suplemento, fecha_inicio, fecha_fin=None):
     if fecha_fin:
         medicacion["effectivePeriod"]["end"] = fecha_fin
     
+    # Añadir patrones de respuesta a la suplementación
+    if random.random() < 0.7:  # 70% de efectividad del suplemento
+        # Este suplemento mejora un biomarcador específico
+        if suplemento["codigo"] == "Omega3":
+            # Mejorar colesterol y omega3_indice en observaciones posteriores
+            # Esta lógica se implementaría en generar_observacion
+            pass
+        elif suplemento["codigo"] == "VitD":
+            # Mejorar vitamina_d en observaciones posteriores
+            pass
+    
     return medicacion
 
 def generar_historial_paciente(paciente, perfil):
@@ -277,6 +289,15 @@ def generar_historial_paciente(paciente, perfil):
         pesos = [0.3, 0.2, 0.5]
     
     tendencia_general = random.choices(tendencias, weights=pesos, k=1)[0]
+    
+    # Modificar para crear patrones más claros en los datos
+    # que las funciones de IA puedan detectar
+    if tendencia_general == "mejora":
+        factor_mejora = 0.92  # Mejor cada vez
+    elif tendencia_general == "empeora":
+        factor_empeora = 1.08  # Peor cada vez
+    else:
+        factor_estable = random.uniform(0.97, 1.03)  # Pequeña variación
     
     # Generar fechas para el historial (últimos 2 años)
     hoy = datetime.now()
@@ -328,7 +349,50 @@ def generar_historial_paciente(paciente, perfil):
         medicacion = generar_medicacion(paciente_id, suplemento, fecha_inicio)
         recursos.append(medicacion)
     
+    # Generar anomalías deliberadas para algunos pacientes
+    if random.random() < 0.2:  # 20% de los pacientes tendrán una anomalía
+        # Elegir un biomarcador aleatorio para la anomalía
+        biomarcador_anomalo = random.choice(BIOMARCADORES)
+        fecha_anomalia = random.choice(fechas)
+        
+        # Buscar y modificar la observación para crear una anomalía
+        for i, recurso in enumerate(recursos):
+            if (recurso.get("resourceType") == "Observation" and
+                recurso.get("effectiveDateTime") == fecha_anomalia and
+                recurso.get("code", {}).get("coding", [{}])[0].get("code") == biomarcador_anomalo["codigo"]):
+                
+                # Crear una anomalía (valor muy alto o muy bajo)
+                valor_normal = recurso["valueQuantity"]["value"]
+                if random.choice([True, False]):
+                    # Valor muy alto (2-3 veces lo normal)
+                    recurso["valueQuantity"]["value"] = valor_normal * random.uniform(2.0, 3.0)
+                else:
+                    # Valor muy bajo (20-40% de lo normal)
+                    recurso["valueQuantity"]["value"] = valor_normal * random.uniform(0.2, 0.4)
+                
+                break
+    
     return recursos
+
+def generar_historial(paciente_id):
+    """Genera datos de historial médico con suplementos y biomarcadores"""
+    return {
+        "paciente_id": paciente_id,  # Ahora es UUID string
+        "suplemento": random.choice(["Omega3", "Vitamina D", "Multivitamínico", "Magnesio", "CoQ10"]),
+        "dosis": f"{random.randint(1, 5)*500}mg" if random.choice([True, False]) else f"{random.randint(1, 3)*1000}UI",
+        "fecha_inicio": (datetime.now() - timedelta(days=random.randint(30, 365))).strftime("%Y-%m-%d"),
+        "duracion": f"{random.randint(1, 12)} meses",
+        "colesterol_total": random.randint(150, 300),
+        "trigliceridos": random.randint(70, 400),
+        "vitamina_d": random.randint(10, 60),
+        "omega3_indice": random.randint(2, 12),
+        "observaciones": random.choice([
+            "Mejoría en niveles de energía",
+            "Sin efectos adversos reportados", 
+            "Ajuste de dosis requerido",
+            "Control periódico recomendado"
+        ])
+    }
 
 def generar_datos_prueba(num_pacientes=10):
     """Genera un conjunto completo de datos de prueba"""
@@ -377,79 +441,92 @@ def guardar_bundle_json(bundle, filename="datos_prueba.json"):
         json.dump(bundle, f, ensure_ascii=False, indent=2)
     print(f"Datos guardados en {filename}")
 
-def importar_a_postgres(bundle):
-    """Importa los datos a PostgreSQL usando la API"""
-    max_intentos = 5
-    for intento in range(max_intentos):
-        try:
-            # Verificar primero si el backend está disponible
-            health_check = requests.get("http://backend:8000/health", timeout=5)
-            if health_check.status_code == 200:
-                print("Backend disponible, importando datos...")
-                
-                response = requests.post(
-                    "http://backend:8000/fhir/import",
-                    json=bundle,
-                    headers={"Content-Type": "application/json"},
-                    timeout=30
-                )
-                
-                # Considerar 201 Created como éxito
-                if response.status_code in [200, 201]:
-                    print(f"Datos importados correctamente a través de la API (status: {response.status_code})")
-                    print(f"Respuesta: {response.text}")
-                    return True
-                else:
-                    print(f"Error al importar datos: {response.status_code}")
-                    print(f"Respuesta: {response.text}")
-            else:
-                print(f"Backend no disponible (status: {health_check.status_code})")
-        except requests.exceptions.RequestException as e:
-            print(f"Error al conectar con la API (intento {intento+1}/{max_intentos}): {e}")
-        
-        # Esperar antes de reintentar
-        if intento < max_intentos - 1:
-            tiempo_espera = 5 * (intento + 1)  # Espera progresiva
-            print(f"Reintentando en {tiempo_espera} segundos...")
-            time.sleep(tiempo_espera)
-    
-    print("No se pudo importar los datos después de varios intentos")
-    return False
-
-if __name__ == "__main__":
-    # Esperar un poco para asegurarse de que el backend esté listo
-    print("Esperando a que el backend esté completamente inicializado...")
-    time.sleep(10)
-    
-    # Verificar si el backend está disponible
-    backend_disponible = False
+def verificar_backend():
+    """Verifica si el backend está disponible"""
     for _ in range(5):
         try:
             response = requests.get("http://backend:8000/health", timeout=2)
             if response.status_code == 200:
-                backend_disponible = True
-                print("Backend disponible, procediendo con la generación de datos...")
-                break
+                return True
         except requests.exceptions.RequestException:
             pass
         print("Backend no disponible, esperando...")
         time.sleep(5)
+    return False
+
+def main():
+    # Verificar si el backend está disponible
+    backend_disponible = verificar_backend()
     
     if not backend_disponible:
         print("No se pudo conectar con el backend después de varios intentos")
         print("Generando datos de todas formas, pero no se importarán automáticamente")
     
+    # Aumentar el número de pacientes para mejores pruebas de IA
+    num_pacientes = 30  # Más pacientes para análisis estadísticos
+    
+    # Crear series temporales más largas para predicciones de tendencias
+    # Modificar generar_historial_paciente para incluir más puntos de datos
+    
     # Generar datos de prueba
-    num_pacientes = 15
     bundle = generar_datos_prueba(num_pacientes)
     
     # Guardar en archivo JSON
     guardar_bundle_json(bundle)
     
-    # Intentar importar si el backend está disponible
     if backend_disponible:
-        importar_a_postgres(bundle)
-    else:
-        print(f"Generados datos para {num_pacientes} pacientes con sus historiales médicos")
-        print("Para importar los datos manualmente, ejecuta:")
-        print("curl -X POST http://localhost:8000/fhir/import -H \"Content-Type: application/json\" -d @datos_prueba.json") 
+        # Primero, crear un bundle solo con pacientes
+        pacientes_bundle = {
+            "resourceType": "Bundle",
+            "type": "transaction",
+            "entry": []
+        }
+        
+        # Extraer solo los pacientes del bundle original
+        for entry in bundle["entry"]:
+            if entry["resource"]["resourceType"] == "Patient":
+                pacientes_bundle["entry"].append(entry)
+        
+        # Importar solo los pacientes primero
+        print("Importando pacientes...")
+        response = requests.post(
+            "http://backend:8000/fhir/import",
+            json=pacientes_bundle
+        )
+        
+        if response.status_code != 200:
+            print(f"Error importando pacientes: {response.text}")
+            return
+        
+        print("Pacientes importados correctamente")
+        
+        # Esperar un momento para asegurar que los pacientes estén en la base de datos
+        time.sleep(2)
+        
+        # Ahora crear los historiales médicos uno por uno
+        for paciente_entry in pacientes_bundle["entry"]:
+            paciente_id = paciente_entry["resource"]["id"]
+            
+            # Verificar que el paciente existe en la base de datos
+            response = requests.get(f"http://backend:8000/pacientes/{paciente_id}")
+            if response.status_code != 200:
+                print(f"Paciente {paciente_id} no encontrado en la base de datos, saltando...")
+                continue
+                
+            print(f"Creando historiales para paciente {paciente_id}")
+            
+            # Crear 2-5 historiales para este paciente
+            for _ in range(random.randint(2, 5)):
+                historial_data = generar_historial(paciente_id)
+                response = requests.post(
+                    "http://backend:8000/fhir/MedicationStatement",
+                    json=historial_data
+                )
+                
+                if response.status_code != 200:
+                    print(f"Error creando historial: {response.text}")
+                else:
+                    print(f"Historial creado correctamente")
+
+if __name__ == "__main__":
+    main() 

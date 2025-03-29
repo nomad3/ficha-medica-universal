@@ -1,11 +1,13 @@
 from sqlalchemy import Column, Integer, String, Text, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 from database import Base  # Asegurar importación correcta
+from sqlalchemy.dialects.postgresql import UUID
+import uuid
 
 class HistorialMedico(Base):
     __tablename__ = "historial_medico"
     id = Column(Integer, primary_key=True)
-    paciente_id = Column(Integer, ForeignKey('pacientes.id'))
+    paciente_id = Column(UUID(as_uuid=True), ForeignKey('pacientes.id'))
     grupo_sanguineo = Column(String(3))
     antecedentes_familiares = Column(Text)
     tratamientos_actuales = Column(Text)
@@ -24,7 +26,7 @@ class HistorialMedico(Base):
 
 class Paciente(Base):
     __tablename__ = "pacientes"
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     rut = Column(String(12), unique=True)
     nombre = Column(String(50))
     apellido = Column(String(50))

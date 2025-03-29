@@ -12,6 +12,7 @@ import SupplementOptimization from './SupplementOptimization';
 const PacienteDetail = () => {
   const { id } = useParams();
   const [paciente, setPaciente] = useState(null);
+  const [historial, setHistorial] = useState([]);
   const [observaciones, setObservaciones] = useState([]);
   const [medicamentos, setMedicamentos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,49 +28,78 @@ const PacienteDetail = () => {
         const patientResponse = await axios.get(`http://localhost:8000/fhir/Patient/${id}`);
         setPaciente(patientResponse.data);
         
-        // Obtener observaciones en formato FHIR
+        // Obtener observaciones (biomarcadores) del paciente
         const observationsResponse = await axios.get(`http://localhost:8000/fhir/Observation/${id}`);
+        console.log('Observaciones:', observationsResponse.data);
         setObservaciones(observationsResponse.data);
         
-        // Obtener medicamentos/suplementos en formato FHIR
+        // Obtener medicamentos (suplementos) del paciente
         const medicationsResponse = await axios.get(`http://localhost:8000/fhir/MedicationStatement/${id}`);
+        console.log('Medicamentos:', medicationsResponse.data);
         setMedicamentos(medicationsResponse.data);
         
+        // Convertir medicamentos a formato para SupplementHistoryList
+        const historialData = medicationsResponse.data.map(med => {
+          // Extraer valores de biomarcadores de las observaciones relacionadas
+          const fecha = med.effectivePeriod?.start || '';
+          const observacionesRelacionadas = observationsResponse.data.filter(
+            obs => obs.effectiveDateTime === fecha
+          );
+          
+          // Buscar valores específicos
+          const colesterol = observacionesRelacionadas.find(
+            obs => obs.code?.coding?.[0]?.code === '2093-3'
+          )?.valueQuantity?.value || 0;
+          
+          const trigliceridos = observacionesRelacionadas.find(
+            obs => obs.code?.coding?.[0]?.code === '2571-8'
+          )?.valueQuantity?.value || 0;
+          
+          const vitaminaD = observacionesRelacionadas.find(
+            obs => obs.code?.coding?.[0]?.code === '14635-7'
+          )?.valueQuantity?.value || 0;
+          
+          const omega3 = observacionesRelacionadas.find(
+            obs => obs.code?.coding?.[0]?.code === 'omega3-index'
+          )?.valueQuantity?.value || 0;
+          
+          return {
+            suplemento: med.medicationCodeableConcept?.coding?.[0]?.display || 'Desconocido',
+            dosis: med.dosage?.[0]?.text || '',
+            fecha_inicio: fecha,
+            colesterol_total: colesterol,
+            trigliceridos: trigliceridos,
+            vitamina_d: vitaminaD,
+            omega3_indice: omega3,
+            observaciones: med.note?.[0]?.text || ''
+          };
+        });
+        
+        setHistorial(historialData);
         setLoading(false);
-      } catch (err) {
-        console.error('Error al cargar datos del paciente:', err);
-        setError('Error al cargar datos del paciente');
+      } catch (error) {
+        console.error('Error fetching patient data:', error);
+        setError('Error al cargar los datos del paciente');
         setLoading(false);
       }
     };
     
-    if (id) {
-      fetchData();
-    }
+    fetchData();
   }, [id]);
 
   if (loading) return <div>Cargando datos del paciente...</div>;
   if (error) return <div className="error">{error}</div>;
   if (!paciente) return <div>No se encontró el paciente</div>;
 
-  // Extraer datos del paciente del formato FHIR con verificación
-  const nombre = paciente.name && paciente.name[0] && paciente.name[0].given ? paciente.name[0].given[0] : 'Sin nombre';
-  const apellido = paciente.name && paciente.name[0] ? paciente.name[0].family : 'Sin apellido';
-  const fechaNacimiento = paciente.birthDate || 'No disponible';
-  const rut = paciente.identifier && paciente.identifier[0] ? paciente.identifier[0].value : 'Sin RUT';
-  const contactoEmergencia = paciente.contact && paciente.contact[0] && paciente.contact[0].name ? 
-    paciente.contact[0].name.text : 'No disponible';
-
   return (
     <div className="paciente-detail">
       <div className="paciente-header">
-        <h2>Ficha Clínica: {nombre} {apellido}</h2>
-        <div className="paciente-info">
-          <p><strong>RUT:</strong> {rut}</p>
-          <p><strong>Fecha Nacimiento:</strong> {fechaNacimiento}</p>
-          <p><strong>Contacto Emergencia:</strong> {contactoEmergencia}</p>
-        </div>
-        <Link to="/" className="btn-back">Volver al listado</Link>
+        <h2>
+          {paciente.name?.[0]?.given?.[0] || ''} {paciente.name?.[0]?.family || ''}
+        </h2>
+        <p>RUT: {paciente.identifier?.[0]?.value || 'No disponible'}</p>
+        <p>Fecha de nacimiento: {paciente.birthDate || 'No disponible'}</p>
+        <Link to="/" className="back-link">← Volver a la lista</Link>
       </div>
       
       <div className="tabs">
@@ -89,7 +119,7 @@ const PacienteDetail = () => {
           className={activeTab === 'predicciones' ? 'active' : ''} 
           onClick={() => setActiveTab('predicciones')}
         >
-          Análisis Predictivo
+          Tendencias Predictivas
         </button>
         <button 
           className={activeTab === 'anomalias' ? 'active' : ''} 
@@ -101,7 +131,7 @@ const PacienteDetail = () => {
           className={activeTab === 'optimizacion' ? 'active' : ''} 
           onClick={() => setActiveTab('optimizacion')}
         >
-          Plan Óptimo
+          Optimización de Suplementos
         </button>
         <button 
           className={activeTab === 'fhir' ? 'active' : ''} 
@@ -115,11 +145,7 @@ const PacienteDetail = () => {
         {activeTab === 'historial' && (
           <div>
             <SupplementHistoryForm pacienteId={id} />
-            {medicamentos && medicamentos.length > 0 ? (
-              <SupplementHistoryList data={medicamentos} />
-            ) : (
-              <p>No hay registros de suplementos</p>
-            )}
+            <SupplementHistoryList data={historial} />
           </div>
         )}
         

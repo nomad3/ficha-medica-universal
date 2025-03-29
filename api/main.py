@@ -1,7 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, FastAPI
 from sqlalchemy.orm import Session
 from api import schemas, models
 from api.database import get_db
+
+# Crear la instancia de FastAPI
+app = FastAPI()
 
 # Nuevo endpoint para interoperabilidad
 @app.get("/ficha-interoperable/{rut}", response_model=schemas.FichaCompleta)

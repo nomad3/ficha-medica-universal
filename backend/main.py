@@ -125,6 +125,12 @@ def wait_for_db():
 wait_for_db()
 models.Base.metadata.create_all(bind=engine)
 
+# Endpoint de health check
+@app.get("/health", status_code=200)
+def health_check():
+    """Endpoint para verificar que la API está funcionando"""
+    return {"status": "ok"}
+
 # ... resto del código de rutas ...
 
 @app.post("/pacientes/", response_model=PacienteBase)
@@ -162,57 +168,62 @@ def crear_registro_historial(
     return db_historial
 
 # Endpoints FHIR
-@app.get("/fhir/Patient", response_model=List[FHIRPatient])
-def listar_pacientes_fhir(db: Session = Depends(get_db)):
-    """Endpoint para listar todos los pacientes en formato FHIR"""
-    pacientes = db.query(models.Paciente).all()
-    
-    resultado = []
-    for paciente in pacientes:
-        fhir_patient = {
-            "resourceType": "Patient",
-            "id": str(paciente.id),
-            "identifier": [
-                {
-                    "system": "http://minsal.cl/rut",
-                    "value": paciente.rut
-                }
-            ],
-            "name": [
-                {
-                    "family": paciente.apellido,
-                    "given": [paciente.nombre]
-                }
-            ],
-            "gender": "male" if paciente.sexo.lower() == "masculino" else "female",
-            "birthDate": paciente.fecha_nacimiento,
-            "telecom": [
-                {
-                    "system": "phone",
-                    "value": paciente.telefono
-                }
-            ],
-            "address": [
-                {
-                    "text": paciente.direccion
-                }
-            ],
-            "contact": [
-                {
-                    "relationship": [
-                        {
-                            "text": "Contacto de emergencia"
-                        }
-                    ],
-                    "name": {
-                        "text": paciente.contacto_emergencia
+@app.get("/fhir/Patient", response_model=List[Dict])
+async def get_patients(db: Session = Depends(get_db)):
+    """Obtiene todos los pacientes en formato FHIR"""
+    try:
+        # Obtener todos los pacientes de la base de datos
+        pacientes = db.query(models.Paciente).all()
+        
+        # Convertir a formato FHIR
+        pacientes_fhir = []
+        for paciente in pacientes:
+            paciente_fhir = {
+                "resourceType": "Patient",
+                "id": str(paciente.id),
+                "identifier": [
+                    {
+                        "system": "http://minsal.cl/rut",
+                        "value": paciente.rut
                     }
-                }
-            ]
-        }
-        resultado.append(fhir_patient)
-    
-    return resultado
+                ],
+                "name": [
+                    {
+                        "use": "official",
+                        "family": paciente.apellido,
+                        "given": [paciente.nombre]
+                    }
+                ],
+                "gender": "male" if paciente.sexo.lower() == "masculino" else "female",
+                "birthDate": paciente.fecha_nacimiento,
+                "address": [
+                    {
+                        "text": paciente.direccion
+                    }
+                ],
+                "telecom": [
+                    {
+                        "system": "phone",
+                        "value": paciente.telefono
+                    }
+                ]
+            }
+            
+            # Agregar email si existe
+            if paciente.email:
+                paciente_fhir["telecom"].append({
+                    "system": "email",
+                    "value": paciente.email
+                })
+                
+            pacientes_fhir.append(paciente_fhir)
+        
+        print(f"Retornando {len(pacientes_fhir)} pacientes en formato FHIR")
+        return pacientes_fhir
+        
+    except Exception as e:
+        print(f"Error al obtener pacientes: {e}")
+        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
 
 @app.get("/fhir/Patient/{id_or_rut}", response_model=FHIRPatient)
 def obtener_paciente_fhir(id_or_rut: str, db: Session = Depends(get_db)):
@@ -437,53 +448,67 @@ def crear_observacion_fhir(observation: FHIRObservation, db: Session = Depends(g
 
 @app.get("/fhir/MedicationStatement/{paciente_id}", response_model=List[FHIRMedicationStatement])
 def obtener_medicamentos_fhir(paciente_id: int, db: Session = Depends(get_db)):
-    """Endpoint para obtener historial de suplementos en formato FHIR"""
+    """Endpoint para obtener medicamentos/suplementos en formato FHIR"""
     historial = db.query(models.HistorialMedico).filter(models.HistorialMedico.paciente_id == paciente_id).all()
     if not historial:
         return []
     
     medicamentos = []
     for registro in historial:
-        med_statement = {
-            "resourceType": "MedicationStatement",
-            "id": f"med-{registro.id}",
-            "status": "active",
-            "medicationCodeableConcept": {
-                "coding": [
+        if registro.suplemento:
+            med_statement = {
+                "resourceType": "MedicationStatement",
+                "id": f"med-{registro.id}",
+                "status": "active",
+                "medicationCodeableConcept": {
+                    "coding": [
+                        {
+                            "system": "http://suplementos.cl/codigo",
+                            "code": registro.suplemento.lower().replace(" ", "-"),
+                            "display": registro.suplemento
+                        }
+                    ],
+                    "text": registro.suplemento
+                },
+                "subject": {
+                    "reference": f"Patient/{paciente_id}"
+                },
+                "effectivePeriod": {
+                    "start": registro.fecha_inicio,
+                    "end": None
+                },
+                "dosage": [
                     {
-                        "system": "http://suplementos.cl/codigo",
-                        "code": registro.suplemento,
-                        "display": registro.suplemento
-                    }
-                ],
-                "text": registro.suplemento
-            },
-            "subject": {
-                "reference": f"Patient/{paciente_id}"
-            },
-            "effectivePeriod": {
-                "start": registro.fecha_inicio,
-                "end": None  # Podría calcularse con fecha_inicio + duracion
-            },
-            "dosage": [
-                {
-                    "text": registro.dosis,
-                    "timing": {
-                        "repeat": {
-                            "frequency": 1,
-                            "period": 1,
-                            "periodUnit": "d"
+                        "text": registro.dosis,
+                        "timing": {
+                            "repeat": {
+                                "frequency": 1,
+                                "period": 1,
+                                "periodUnit": "d"
+                            }
+                        },
+                        "route": {
+                            "coding": [
+                                {
+                                    "system": "http://snomed.info/sct",
+                                    "code": "26643006",
+                                    "display": "Oral route"
+                                }
+                            ]
                         }
                     }
-                }
-            ],
-            "note": [
-                {
-                    "text": registro.observaciones
-                }
-            ] if registro.observaciones else None
-        }
-        medicamentos.append(med_statement)
+                ]
+            }
+            
+            # Agregar observaciones si existen
+            if registro.observaciones:
+                med_statement["note"] = [
+                    {
+                        "text": registro.observaciones
+                    }
+                ]
+                
+            medicamentos.append(med_statement)
     
     return medicamentos
 

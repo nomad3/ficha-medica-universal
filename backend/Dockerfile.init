@@ -1,0 +1,15 @@
+FROM python:3.9
+
+WORKDIR /app
+
+# Instalar dependencias necesarias
+RUN pip install --no-cache-dir requests psycopg2-binary
+
+# Copiar scripts
+COPY ./scripts /app/scripts
+
+# Establecer el directorio de trabajo
+WORKDIR /app/scripts
+
+# Comando por defecto (se sobrescribe en docker-compose.yml)
+CMD ["python", "generate_test_data.py"] 

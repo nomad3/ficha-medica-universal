@@ -2,13 +2,13 @@ version: '3.8'
 
 services:
   db:
-    image: postgres:15-alpine
-    environment:
-      POSTGRES_DB: salud_db
-      POSTGRES_USER: salud_user
-      POSTGRES_PASSWORD: salud_pass
+    image: postgres:13
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=salud_user
+      - POSTGRES_PASSWORD=salud_password
+      - POSTGRES_DB=salud_db
     ports:
       - "5432:5432"
     healthcheck:
@@ -19,26 +19,39 @@ services:
 
   backend:
     build: ./backend
-    command: sh -c "python create_tables.py && uvicorn main:app --host 0.0.0.0 --port 8000"
     volumes:
       - ./backend:/app
+      - ./scripts:/app/scripts
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql://salud_user:salud_pass@db:5432/salud_db
-      PYTHONPATH: /app
+      - DATABASE_URL=postgresql://salud_user:salud_password@db:5432/salud_db
     depends_on:
       db:
         condition: service_healthy
+    command: sh -c "sleep 5 && uvicorn main:app --host 0.0.0.0 --reload"
 
   frontend:
     build: ./frontend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
     ports:
       - "3000:3000"
     depends_on:
       - backend
+
+  init-db:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile.init
+    volumes:
+      - ./scripts:/app/scripts
     environment:
-      - NODE_ENV=development
+      - DATABASE_URL=postgresql://salud_user:salud_password@db:5432/salud_db
+    depends_on:
+      - backend
+    command: sh -c "sleep 15 && python /app/scripts/generate_test_data.py"
 
 volumes:
-  postgres_data: 
+  postgres_data:

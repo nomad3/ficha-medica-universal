@@ -12,12 +12,21 @@ const PacienteList = () => {
       try {
         setLoading(true);
         const response = await axios.get('http://localhost:8000/fhir/Patient');
-        if (Array.isArray(response.data)) {
+        console.log('Respuesta de la API:', response.data);
+        
+        // Verificar la estructura de la respuesta
+        if (response.data && response.data.entry && Array.isArray(response.data.entry)) {
+          // Si la respuesta es un Bundle FHIR
+          const pacientesData = response.data.entry.map(entry => entry.resource);
+          setPacientes(pacientesData);
+        } else if (Array.isArray(response.data)) {
+          // Si la respuesta es un array directo
           setPacientes(response.data);
         } else {
           console.error('Formato de respuesta inesperado:', response.data);
           setError('Formato de datos inesperado');
         }
+        
         setLoading(false);
       } catch (error) {
         console.error('Error fetching pacientes:', error);
@@ -25,6 +34,7 @@ const PacienteList = () => {
         setLoading(false);
       }
     };
+    
     fetchPacientes();
   }, []);
 

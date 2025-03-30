@@ -18,100 +18,119 @@ DB_CONFIG = {
     "port": "5432"
 }
 
-# Datos de ejemplo para pacientes
-NOMBRES = ["Juan", "María", "Carlos", "Ana", "Pedro", "Laura", "Diego", "Sofía", "Miguel", "Valentina"]
-APELLIDOS = ["González", "Rodríguez", "Pérez", "López", "Martínez", "Sánchez", "Fernández", "Torres", "Ramírez", "Díaz"]
-SEXOS = ["male", "female"]
-CIUDADES = ["Santiago", "Concepción", "Valparaíso", "Antofagasta", "Temuco", "La Serena", "Rancagua", "Puerto Montt"]
+# Datos para generar información aleatoria
+NOMBRES = ["Juan", "María", "Pedro", "Ana", "Luis", "Carla", "Diego", "Sofía", "Miguel", "Valentina", 
+           "Javier", "Catalina", "Roberto", "Fernanda", "Carlos", "Paula", "Eduardo", "Daniela"]
+APELLIDOS = ["González", "Rodríguez", "Fernández", "López", "Martínez", "Pérez", "Gómez", "Sánchez", 
+            "Romero", "Torres", "Flores", "Rivera", "Vargas", "Ramos", "Reyes", "Cruz", "Morales"]
+COMUNAS = ["Santiago", "Providencia", "Las Condes", "Ñuñoa", "La Florida", "Maipú", "Puente Alto", 
+          "Vitacura", "Conchalí", "Recoleta", "Independencia", "Huechuraba", "Quilicura"]
+CALLES = ["Av. Providencia", "Av. Apoquindo", "Av. Las Condes", "Av. Vicuña Mackenna", "Av. Libertador", 
+         "Av. Los Leones", "Av. Tobalaba", "Av. Irarrázaval", "Av. Grecia", "Av. Macul", "Av. Departamental"]
 
 # Datos para suplementos
 SUPLEMENTOS = [
-    {"codigo": "Omega3", "nombre": "Omega-3", "dosis": ["500mg", "1000mg", "2000mg"]},
-    {"codigo": "VitD", "nombre": "Vitamina D", "dosis": ["1000UI", "2000UI", "5000UI"]},
-    {"codigo": "Multi", "nombre": "Multivitamínico", "dosis": ["1 tableta", "2 tabletas"]},
-    {"codigo": "CoQ10", "nombre": "Coenzima Q10", "dosis": ["100mg", "200mg"]},
-    {"codigo": "Magnesio", "nombre": "Magnesio", "dosis": ["250mg", "400mg", "500mg"]},
-    {"codigo": "VitB12", "nombre": "Vitamina B12", "dosis": ["500mcg", "1000mcg", "2500mcg"]},
-    {"codigo": "Zinc", "nombre": "Zinc", "dosis": ["15mg", "25mg", "50mg"]}
+    {"codigo": "Omega3", "nombre": "Omega-3", "dosis": ["1000mg", "2000mg", "3000mg", "500mg"]},
+    {"codigo": "VitD", "nombre": "Vitamina D", "dosis": ["1000UI", "2000UI", "5000UI", "10000UI"]},
+    {"codigo": "Multi", "nombre": "Multivitamínico", "dosis": ["1 tableta", "1 cápsula", "2 cápsulas"]},
+    {"codigo": "Magnesio", "nombre": "Magnesio", "dosis": ["200mg", "400mg", "600mg"]},
+    {"codigo": "CoQ10", "nombre": "Coenzima Q10", "dosis": ["50mg", "100mg", "200mg"]}
 ]
 
 # Datos para biomarcadores
 BIOMARCADORES = [
-    {"codigo": "2093-3", "nombre": "Colesterol total", "unidad": "mg/dL", "min": 130, "max": 240, "optimo": 180},
-    {"codigo": "2571-8", "nombre": "Triglicéridos", "unidad": "mg/dL", "min": 40, "max": 200, "optimo": 100},
-    {"codigo": "14635-7", "nombre": "Vitamina D", "unidad": "ng/mL", "min": 10, "max": 80, "optimo": 40},
-    {"codigo": "omega3_index", "nombre": "Índice Omega-3", "unidad": "%", "min": 2, "max": 10, "optimo": 6}
+    {"codigo": "2093-3", "nombre": "Colesterol total", "unidad": "mg/dL", "min": 100, "optimo": 180, "max": 300},
+    {"codigo": "2571-8", "nombre": "Triglicéridos", "unidad": "mg/dL", "min": 50, "optimo": 100, "max": 500},
+    {"codigo": "14635-7", "nombre": "Vitamina D, 25-OH", "unidad": "ng/mL", "min": 10, "optimo": 40, "max": 80},
+    {"codigo": "omega3_index", "nombre": "Índice de Omega-3", "unidad": "%", "min": 2, "optimo": 8, "max": 12}
 ]
 
-# Perfiles de pacientes para generar datos más realistas
+# Perfiles de paciente
 PERFILES = [
     {
         "nombre": "Perfil Saludable",
-        "descripcion": "Paciente con buenos hábitos y valores normales",
-        "modificadores": {"colesterol": 0.9, "trigliceridos": 0.8, "vitamina_d": 1.2, "omega3": 1.1},
-        "probabilidad_suplemento": 0.3
+        "probabilidad_suplemento": 0.3,  # 30% de tener suplementos
+        "modificadores": {
+            "colesterol": 0.9,     # Colesterol 10% por debajo del óptimo
+            "trigliceridos": 0.85, # Triglicéridos 15% por debajo del óptimo
+            "vitamina_d": 1.1,     # Vitamina D 10% por encima del óptimo
+            "omega3": 1.15         # Omega-3 15% por encima del óptimo
+        }
     },
     {
         "nombre": "Perfil Cardiovascular",
-        "descripcion": "Paciente con factores de riesgo cardiovascular",
-        "modificadores": {"colesterol": 1.3, "trigliceridos": 1.4, "vitamina_d": 0.9, "omega3": 0.7},
-        "probabilidad_suplemento": 0.7
+        "probabilidad_suplemento": 0.7,  # 70% de tener suplementos
+        "modificadores": {
+            "colesterol": 1.4,     # Colesterol 40% por encima del óptimo
+            "trigliceridos": 1.5,  # Triglicéridos 50% por encima del óptimo
+            "vitamina_d": 0.9,     # Vitamina D 10% por debajo del óptimo
+            "omega3": 0.7          # Omega-3 30% por debajo del óptimo
+        }
     },
     {
         "nombre": "Perfil Deficiencia Nutricional",
-        "descripcion": "Paciente con deficiencias vitamínicas",
-        "modificadores": {"colesterol": 1.0, "trigliceridos": 1.0, "vitamina_d": 0.6, "omega3": 0.5},
-        "probabilidad_suplemento": 0.8
+        "probabilidad_suplemento": 0.8,  # 80% de tener suplementos
+        "modificadores": {
+            "colesterol": 1.1,     # Colesterol 10% por encima del óptimo
+            "trigliceridos": 1.15, # Triglicéridos 15% por encima del óptimo
+            "vitamina_d": 0.6,     # Vitamina D 40% por debajo del óptimo
+            "omega3": 0.7          # Omega-3 30% por debajo del óptimo
+        }
     },
     {
-        "nombre": "Perfil Adulto Mayor",
-        "descripcion": "Paciente mayor de 65 años con necesidades específicas",
-        "modificadores": {"colesterol": 1.1, "trigliceridos": 1.1, "vitamina_d": 0.7, "omega3": 0.8},
-        "probabilidad_suplemento": 0.9
+        "nombre": "Perfil Metabólico",
+        "probabilidad_suplemento": 0.6,  # 60% de tener suplementos
+        "modificadores": {
+            "colesterol": 1.25,    # Colesterol 25% por encima del óptimo
+            "trigliceridos": 1.4,  # Triglicéridos 40% por encima del óptimo
+            "vitamina_d": 0.8,     # Vitamina D 20% por debajo del óptimo
+            "omega3": 0.85         # Omega-3 15% por debajo del óptimo
+        }
     },
     {
         "nombre": "Perfil Deportista",
-        "descripcion": "Paciente con actividad física regular",
-        "modificadores": {"colesterol": 0.8, "trigliceridos": 0.7, "vitamina_d": 1.1, "omega3": 1.2},
-        "probabilidad_suplemento": 0.6
+        "probabilidad_suplemento": 0.9,  # 90% de tener suplementos
+        "modificadores": {
+            "colesterol": 0.95,    # Colesterol 5% por debajo del óptimo
+            "trigliceridos": 0.9,  # Triglicéridos 10% por debajo del óptimo
+            "vitamina_d": 1.2,     # Vitamina D 20% por encima del óptimo
+            "omega3": 1.2          # Omega-3 20% por encima del óptimo
+        }
     }
 ]
 
 def generar_rut():
-    """Genera un RUT chileno aleatorio con formato"""
+    """Genera un RUT chileno válido"""
     num = random.randint(10000000, 25000000)
-    verificador = "0123456789K"[num % 11]
-    return f"{num:,}".replace(",", ".") + "-" + verificador
-
-def generar_fecha_nacimiento(min_edad=18, max_edad=85):
-    """Genera una fecha de nacimiento aleatoria"""
-    dias = random.randint(min_edad * 365, max_edad * 365)
-    return (datetime.now() - timedelta(days=dias)).strftime("%Y-%m-%d")
+    return f"{num}-{random.randint(0, 9)}"
 
 def generar_telefono():
-    """Genera un número de teléfono chileno aleatorio"""
+    """Genera un número de teléfono chileno"""
     return f"+569{random.randint(10000000, 99999999)}"
 
 def generar_direccion():
     """Genera una dirección aleatoria"""
-    calles = ["Av. Principal", "Calle Los Robles", "Pasaje Las Flores", "Av. Libertad", "Calle O'Higgins"]
-    return f"{random.choice(calles)} {random.randint(100, 9999)}, {random.choice(CIUDADES)}"
+    return f"{random.choice(CALLES)} {random.randint(100, 9999)}, {random.choice(COMUNAS)}"
+
+def generar_fecha_nacimiento():
+    """Genera una fecha de nacimiento para un adulto"""
+    anio = random.randint(1950, 2005)
+    mes = random.randint(1, 12)
+    dia = random.randint(1, 28)  # Para evitar problemas con febrero
+    return f"{anio}-{mes:02d}-{dia:02d}"
 
 def generar_paciente(perfil):
-    """Genera datos de un paciente basado en un perfil"""
-    sexo = random.choice(SEXOS)
-    nombre = random.choice(NOMBRES) if sexo == "male" else random.choice([n for n in NOMBRES if n in ["María", "Ana", "Laura", "Sofía", "Valentina"]])
+    """Genera datos de un paciente"""
+    # Información básica
+    sexo_m = random.choice([True, False])
+    sexo = "male" if sexo_m else "female"
+    nombre = random.choice([n for n in NOMBRES if (sexo_m and n in ["Juan", "Pedro", "Luis", "Diego", "Miguel", "Javier", "Roberto", "Carlos", "Eduardo"]) or 
+                          (not sexo_m and n in ["María", "Ana", "Carla", "Sofía", "Valentina", "Catalina", "Fernanda", "Paula", "Daniela"])])
+    fecha_nacimiento = generar_fecha_nacimiento()
     
-    # Ajustar edad según perfil
-    min_edad = 65 if perfil["nombre"] == "Perfil Adulto Mayor" else 18
-    max_edad = 90 if perfil["nombre"] == "Perfil Adulto Mayor" else 64
-    
-    fecha_nacimiento = generar_fecha_nacimiento(min_edad, max_edad)
-    
-    paciente_id = str(uuid.uuid4())
     return {
         "resourceType": "Patient",
-        "id": paciente_id,
+        "id": str(uuid.uuid4()),
         "identifier": [
             {
                 "system": "http://minsal.cl/rut",
@@ -276,101 +295,142 @@ def generar_medicacion(paciente_id, suplemento, fecha_inicio, fecha_fin=None):
     return medicacion
 
 def generar_historial_paciente(paciente, perfil):
-    """Genera historial completo para un paciente"""
+    """Genera historial completo para un paciente incluyendo observaciones y medicaciones"""
     paciente_id = paciente["id"]
     recursos = []
     
-    # Determinar tendencia general del paciente
-    tendencias = ["estable", "mejora", "empeora"]
-    pesos = [0.6, 0.2, 0.2]
-    if perfil["nombre"] == "Perfil Saludable":
-        pesos = [0.4, 0.5, 0.1]
-    elif perfil["nombre"] == "Perfil Cardiovascular":
-        pesos = [0.3, 0.2, 0.5]
+    # Generar fechas en retroactivo (más recientes primero)
+    num_fechas = random.randint(6, 10)  # Aumentar número de puntos de datos
     
-    tendencia_general = random.choices(tendencias, weights=pesos, k=1)[0]
-    
-    # Modificar para crear patrones más claros en los datos
-    # que las funciones de IA puedan detectar
-    if tendencia_general == "mejora":
-        factor_mejora = 0.92  # Mejor cada vez
-    elif tendencia_general == "empeora":
-        factor_empeora = 1.08  # Peor cada vez
-    else:
-        factor_estable = random.uniform(0.97, 1.03)  # Pequeña variación
-    
-    # Generar fechas para el historial (últimos 2 años)
-    hoy = datetime.now()
     fechas = []
-    for i in range(4):  # 4 mediciones en 2 años
-        dias_atras = random.randint(i*180, (i+1)*180)
+    hoy = datetime.now()
+    for i in range(num_fechas):
+        # Distribuir las fechas en los últimos 2 años para mejor visualización de tendencias
+        dias_atras = int(720 * (num_fechas - i) / num_fechas)
         fecha = (hoy - timedelta(days=dias_atras)).strftime("%Y-%m-%d")
         fechas.append(fecha)
     
-    fechas.sort()  # Ordenar cronológicamente
-    
-    # Generar observaciones para cada biomarcador en cada fecha
-    for fecha in fechas:
-        for biomarcador in BIOMARCADORES:
-            observacion = generar_observacion(paciente_id, biomarcador, perfil, fecha, tendencia_general)
-            recursos.append(observacion)
-    
-    # Generar historial de suplementación
+    # Asignar suplementos según perfil de paciente
     suplementos_asignados = []
     for suplemento in SUPLEMENTOS:
         if random.random() < perfil["probabilidad_suplemento"]:
-            # Fecha de inicio aleatoria en el último año
-            dias_atras = random.randint(30, 365)
-            fecha_inicio = (hoy - timedelta(days=dias_atras)).strftime("%Y-%m-%d")
-            
-            # 30% de probabilidad de que haya terminado
-            fecha_fin = None
-            if random.random() < 0.3:
-                dias_duracion = random.randint(30, min(dias_atras-1, 180))
-                fecha_fin = (hoy - timedelta(days=dias_atras-dias_duracion)).strftime("%Y-%m-%d")
-            
-            medicacion = generar_medicacion(paciente_id, suplemento, fecha_inicio, fecha_fin)
-            recursos.append(medicacion)
             suplementos_asignados.append(suplemento["codigo"])
     
-    # Asegurar que al menos un paciente con perfil cardiovascular tenga Omega3
-    if perfil["nombre"] == "Perfil Cardiovascular" and "Omega3" not in suplementos_asignados:
-        dias_atras = random.randint(30, 180)
-        fecha_inicio = (hoy - timedelta(days=dias_atras)).strftime("%Y-%m-%d")
-        suplemento = next(s for s in SUPLEMENTOS if s["codigo"] == "Omega3")
-        medicacion = generar_medicacion(paciente_id, suplemento, fecha_inicio)
-        recursos.append(medicacion)
-    
-    # Asegurar que al menos un paciente con deficiencia nutricional tenga VitD
-    if perfil["nombre"] == "Perfil Deficiencia Nutricional" and "VitD" not in suplementos_asignados:
-        dias_atras = random.randint(30, 180)
-        fecha_inicio = (hoy - timedelta(days=dias_atras)).strftime("%Y-%m-%d")
-        suplemento = next(s for s in SUPLEMENTOS if s["codigo"] == "VitD")
-        medicacion = generar_medicacion(paciente_id, suplemento, fecha_inicio)
-        recursos.append(medicacion)
-    
-    # Generar anomalías deliberadas para algunos pacientes
-    if random.random() < 0.2:  # 20% de los pacientes tendrán una anomalía
-        # Elegir un biomarcador aleatorio para la anomalía
-        biomarcador_anomalo = random.choice(BIOMARCADORES)
-        fecha_anomalia = random.choice(fechas)
+    # Valores base de biomarcadores
+    valores_base = {}
+    for marcador in BIOMARCADORES:
+        # Aplicar modificadores según perfil
+        modificador = 1.0
+        if marcador["nombre"] == "Colesterol total":
+            modificador = perfil["modificadores"]["colesterol"]
+        elif marcador["nombre"] == "Triglicéridos":
+            modificador = perfil["modificadores"]["trigliceridos"]
+        elif marcador["nombre"] == "Vitamina D, 25-OH":
+            modificador = perfil["modificadores"]["vitamina_d"]
+        elif marcador["nombre"] == "Índice de Omega-3":
+            modificador = perfil["modificadores"]["omega3"]
         
-        # Buscar y modificar la observación para crear una anomalía
-        for i, recurso in enumerate(recursos):
-            if (recurso.get("resourceType") == "Observation" and
-                recurso.get("effectiveDateTime") == fecha_anomalia and
-                recurso.get("code", {}).get("coding", [{}])[0].get("code") == biomarcador_anomalo["codigo"]):
+        valor_base = marcador["optimo"] * modificador
+        valores_base[marcador["codigo"]] = valor_base
+    
+    # Para cada fecha, generar observaciones con variación
+    for fecha_idx, fecha in enumerate(fechas):
+        for marcador in BIOMARCADORES:
+            codigo = marcador["codigo"]
+            
+            # Si no es la primera fecha, aplicar tendencia (mejora si toma suplemento relacionado)
+            if fecha_idx > 0:
+                valor_previo = valores_base[codigo]
                 
-                # Crear una anomalía (valor muy alto o muy bajo)
-                valor_normal = recurso["valueQuantity"]["value"]
-                if random.choice([True, False]):
-                    # Valor muy alto (2-3 veces lo normal)
-                    recurso["valueQuantity"]["value"] = valor_normal * random.uniform(2.0, 3.0)
-                else:
-                    # Valor muy bajo (20-40% de lo normal)
-                    recurso["valueQuantity"]["value"] = valor_normal * random.uniform(0.2, 0.4)
+                # Calcular mejora por suplementos
+                mejora = 0
+                for suplemento in suplementos_asignados:
+                    # Mejora por Omega-3 en lípidos y omega3_index
+                    if suplemento == "Omega3" and codigo in ["2093-3", "2571-8", "omega3_index"]:
+                        mejora += random.uniform(0.02, 0.05)
+                    # Mejora por Vitamina D 
+                    elif suplemento == "VitD" and codigo == "14635-7":
+                        mejora += random.uniform(0.03, 0.06)
                 
-                break
+                # Tendencia natural (ligero empeoramiento o estabilidad)
+                tendencia_natural = random.uniform(-0.02, 0.01)
+                
+                # Combinar tendencias
+                cambio_total = tendencia_natural + mejora
+                
+                # Aplicar cambio y añadir ruido aleatorio para realismo
+                valor_nuevo = valor_previo * (1 + cambio_total) * random.uniform(0.97, 1.03)
+                
+                # Limitar a rangos razonables
+                valor_nuevo = max(marcador["min"], min(marcador["max"], valor_nuevo))
+                valores_base[codigo] = valor_nuevo
+            
+            # Crear observación FHIR
+            valor = valores_base[codigo]
+            observacion = {
+                "resourceType": "Observation",
+                "id": str(uuid.uuid4()),
+                "status": "final",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "http://loinc.org",
+                            "code": codigo,
+                            "display": marcador["nombre"]
+                        }
+                    ]
+                },
+                "subject": {
+                    "reference": f"Patient/{paciente_id}"
+                },
+                "effectiveDateTime": fecha,
+                "valueQuantity": {
+                    "value": round(valor, 1) if codigo == "omega3_index" else int(valor),
+                    "unit": marcador["unidad"],
+                    "system": "http://unitsofmeasure.org",
+                    "code": marcador["unidad"]
+                }
+            }
+            recursos.append(observacion)
+        
+        # Generar declaraciones de medicación (MedicationStatement)
+        for suplemento_codigo in suplementos_asignados:
+            suplemento = next((s for s in SUPLEMENTOS if s["codigo"] == suplemento_codigo), None)
+            if suplemento:
+                # La fecha de inicio del suplemento será anterior a la fecha actual del ciclo
+                dias_atras = (hoy - datetime.strptime(fecha, "%Y-%m-%d")).days
+                
+                # Asegurarse de que el rango para randint sea válido
+                max_duracion = max(31, min(dias_atras, 180))  # Asegurar que sea al menos 31
+                dias_duracion = random.randint(30, max_duracion)
+                
+                fecha_inicio = (datetime.strptime(fecha, "%Y-%m-%d") - timedelta(days=dias_duracion)).strftime("%Y-%m-%d")
+                
+                medicacion = {
+                    "resourceType": "MedicationStatement",
+                    "id": str(uuid.uuid4()),
+                    "status": "active",
+                    "medicationCodeableConcept": {
+                        "coding": [
+                            {
+                                "system": "http://suplementos.org",
+                                "code": suplemento["codigo"],
+                                "display": suplemento["nombre"]
+                            }
+                        ],
+                        "text": suplemento["nombre"]
+                    },
+                    "subject": {
+                        "reference": f"Patient/{paciente_id}"
+                    },
+                    "effectiveDateTime": fecha_inicio,
+                    "dosage": [
+                        {
+                            "text": random.choice(suplemento["dosis"]) + " diario"
+                        }
+                    ]
+                }
+                recursos.append(medicacion)
     
     return recursos
 
@@ -394,7 +454,7 @@ def generar_historial(paciente_id):
         ])
     }
 
-def generar_datos_prueba(num_pacientes=10):
+def generar_datos_prueba(num_pacientes=50):  # Aumentado de 30 a 50 pacientes
     """Genera un conjunto completo de datos de prueba"""
     bundle = {
         "resourceType": "Bundle",
@@ -463,10 +523,7 @@ def main():
         print("Generando datos de todas formas, pero no se importarán automáticamente")
     
     # Aumentar el número de pacientes para mejores pruebas de IA
-    num_pacientes = 30  # Más pacientes para análisis estadísticos
-    
-    # Crear series temporales más largas para predicciones de tendencias
-    # Modificar generar_historial_paciente para incluir más puntos de datos
+    num_pacientes = 50  # Más pacientes para análisis estadísticos
     
     # Generar datos de prueba
     bundle = generar_datos_prueba(num_pacientes)
@@ -519,14 +576,41 @@ def main():
             for _ in range(random.randint(2, 5)):
                 historial_data = generar_historial(paciente_id)
                 response = requests.post(
-                    "http://backend:8000/fhir/MedicationStatement",
+                    "http://backend:8000/historial",
                     json=historial_data
                 )
                 
-                if response.status_code != 200:
+                if response.status_code not in [200, 201]:
                     print(f"Error creando historial: {response.text}")
                 else:
-                    print(f"Historial creado correctamente")
+                    print("Historial creado correctamente")
+        
+        # Ahora importar observaciones y medicaciones
+        observaciones_medicaciones_bundle = {
+            "resourceType": "Bundle",
+            "type": "transaction",
+            "entry": []
+        }
+        
+        # Extraer observaciones y medicaciones del bundle original
+        for entry in bundle["entry"]:
+            if entry["resource"]["resourceType"] in ["Observation", "MedicationStatement"]:
+                observaciones_medicaciones_bundle["entry"].append(entry)
+        
+        # Importar observaciones y medicaciones
+        if observaciones_medicaciones_bundle["entry"]:
+            print("Importando observaciones y medicaciones...")
+            response = requests.post(
+                "http://backend:8000/fhir/import",
+                json=observaciones_medicaciones_bundle
+            )
+            
+            if response.status_code != 200:
+                print(f"Error importando observaciones y medicaciones: {response.text}")
+            else:
+                print("Observaciones y medicaciones importadas correctamente")
+    
+    print("Generación de datos de prueba completada.")
 
 if __name__ == "__main__":
     main() 

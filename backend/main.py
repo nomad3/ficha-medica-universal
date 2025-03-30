@@ -174,20 +174,25 @@ def obtener_paciente(paciente_id: str, db: Session = Depends(get_db)):
     
     return paciente
 
-@app.post("/historial/{paciente_id}", response_model=HistorialMedicoBase)
-def crear_registro_historial(
-    paciente_id: int, 
-    historial: HistorialMedicoBase, 
-    db: Session = Depends(get_db)
-):
-    db_historial = models.HistorialMedico(
-        paciente_id=paciente_id,
-        **historial.dict()
-    )
-    db.add(db_historial)
-    db.commit()
-    db.refresh(db_historial)
-    return db_historial
+@app.post("/historial", response_model=HistorialMedicoBase)
+def crear_historial(historial: HistorialMedicoCreate, db: Session = Depends(get_db)):
+    """Crea un nuevo registro de historial médico para un paciente"""
+    try:
+        # Verificar que el paciente existe
+        paciente = db.query(models.Paciente).filter(models.Paciente.id == historial.paciente_id).first()
+        if not paciente:
+            raise HTTPException(status_code=404, detail="Paciente no encontrado")
+        
+        # Crear nuevo historial
+        nuevo_historial = models.HistorialMedico(**historial.dict())
+        db.add(nuevo_historial)
+        db.commit()
+        db.refresh(nuevo_historial)
+        
+        return nuevo_historial
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error creando historial médico: {str(e)}")
 
 # Endpoints FHIR
 @app.get("/fhir/Patient", response_model=List[Dict])
@@ -1288,4 +1293,122 @@ def convertir_paciente_a_fhir(paciente):
         ]
     }
     
-    return paciente_fhir 
+    return paciente_fhir
+
+# Add this function to handle FHIR Observation resources
+def procesar_observacion_fhir(observacion, db):
+    """Procesa una observación en formato FHIR y la almacena en la base de datos"""
+    try:
+        # Extract patient reference
+        patient_ref = observacion.get("subject", {}).get("reference", "")
+        if not patient_ref or not patient_ref.startswith("Patient/"):
+            print(f"Referencia de paciente inválida: {patient_ref}")
+            return None
+            
+        patient_id = patient_ref.replace("Patient/", "")
+        
+        # Extract code and value
+        coding = observacion.get("code", {}).get("coding", [])
+        if not coding:
+            print("Observación sin código")
+            return None
+            
+        code = coding[0].get("code", "")
+        
+        # Extract value - could be valueQuantity, valueString, etc.
+        value = None
+        if "valueQuantity" in observacion:
+            value = observacion["valueQuantity"].get("value")
+        elif "valueString" in observacion:
+            value = observacion["valueString"]
+        elif "valueCodeableConcept" in observacion:
+            value = str(observacion["valueCodeableConcept"])
+        
+        if value is None:
+            print(f"Observación sin valor para el código {code}")
+            return None
+            
+        # Check if patient exists
+        paciente = db.query(models.Paciente).filter(models.Paciente.id == patient_id).first()
+        if not paciente:
+            print(f"Paciente {patient_id} no encontrado")
+            return None
+            
+        # Create or update historial médico record
+        historial = db.query(models.HistorialMedico).filter(
+            models.HistorialMedico.paciente_id == patient_id
+        ).first()
+        
+        if not historial:
+            historial = models.HistorialMedico(paciente_id=patient_id)
+            db.add(historial)
+        
+        # Map FHIR code to database field
+        if code == "2093-3":  # Colesterol total
+            historial.colesterol_total = value
+        elif code == "2571-8":  # Triglicéridos
+            historial.trigliceridos = value
+        elif code == "14635-7":  # Vitamina D
+            historial.vitamina_d = value
+        elif code == "omega3_index":  # Omega-3 Index
+            historial.omega3_index = value
+        
+        db.commit()
+        return historial
+    except Exception as e:
+        print(f"Error procesando observación: {str(e)}")
+        db.rollback()
+        return None
+
+def procesar_medicacion_fhir(medicacion, db):
+    """Procesa una declaración de medicación en formato FHIR y la almacena en la base de datos"""
+    try:
+        # Extract patient reference
+        patient_ref = medicacion.get("subject", {}).get("reference", "")
+        if not patient_ref or not patient_ref.startswith("Patient/"):
+            print(f"Referencia de paciente inválida en medicación: {patient_ref}")
+            return None
+            
+        patient_id = patient_ref.replace("Patient/", "")
+        
+        # Extract medication information
+        medication_ref = None
+        if "medicationReference" in medicacion:
+            medication_ref = medicacion["medicationReference"].get("reference", "")
+        elif "medicationCodeableConcept" in medicacion:
+            coding = medicacion["medicationCodeableConcept"].get("coding", [{}])
+            if coding:
+                medication_ref = coding[0].get("code", "")
+        
+        if not medication_ref:
+            print("Medicación sin referencia o código")
+            return None
+            
+        # Get status and date
+        status = medicacion.get("status", "unknown")
+        fecha = medicacion.get("effectiveDateTime", "")
+        
+        # Check if patient exists
+        paciente = db.query(models.Paciente).filter(models.Paciente.id == patient_id).first()
+        if not paciente:
+            print(f"Paciente {patient_id} no encontrado para medicación")
+            return None
+            
+        # Create medicación record
+        # Assuming you have a Medicacion model in your models.py
+        nueva_medicacion = models.Medicacion(
+            paciente_id=patient_id,
+            codigo=medication_ref,
+            estado=status,
+            fecha_inicio=fecha,
+            dosis=medicacion.get("dosage", [{}])[0].get("text", "")
+        )
+        
+        db.add(nueva_medicacion)
+        db.commit()
+        
+        return nueva_medicacion
+    except Exception as e:
+        print(f"Error procesando medicación: {str(e)}")
+        db.rollback()
+        return None 

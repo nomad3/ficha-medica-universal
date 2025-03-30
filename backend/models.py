@@ -47,4 +47,20 @@ class Paciente(Base):
     objetivo_suplementacion = Column(Text)
     
     historial = relationship("HistorialMedico", back_populates="paciente")
+    medicaciones = relationship("Medicacion", back_populates="paciente")
     # ... resto de campos ... 
+
+class Medicacion(Base):
+    __tablename__ = "medicaciones"
+    
+    id = Column(Integer, primary_key=True)
+    paciente_id = Column(UUID(as_uuid=True), ForeignKey('pacientes.id'))
+    codigo = Column(String(50))  # Código del medicamento o suplemento
+    nombre = Column(String(100), nullable=True)  # Nombre descriptivo
+    estado = Column(String(20))  # active, completed, etc.
+    fecha_inicio = Column(String)  # Fecha de inicio
+    fecha_fin = Column(String, nullable=True)  # Fecha de fin (opcional)
+    dosis = Column(String(100))  # Información de dosificación
+    
+    # Relación con el paciente
+    paciente = relationship("Paciente", back_populates="medicaciones") 

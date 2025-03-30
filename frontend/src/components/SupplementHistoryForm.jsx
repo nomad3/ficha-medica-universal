@@ -103,6 +103,58 @@ const SupplementHistoryForm = ({ pacienteId }) => {
           }
         });
       }
+      
+      if (formData.vitamina_d > 0) {
+        observations.push({
+          resourceType: "Observation",
+          status: "final",
+          code: {
+            coding: [
+              {
+                system: "http://loinc.org",
+                code: "14635-7",
+                display: "Vitamina D"
+              }
+            ]
+          },
+          subject: {
+            reference: `Patient/${pacienteId}`
+          },
+          effectiveDateTime: formData.fecha_inicio,
+          valueQuantity: {
+            value: parseInt(formData.vitamina_d),
+            unit: "ng/mL",
+            system: "http://unitsofmeasure.org",
+            code: "ng/mL"
+          }
+        });
+      }
+      
+      if (formData.omega3_indice > 0) {
+        observations.push({
+          resourceType: "Observation",
+          status: "final",
+          code: {
+            coding: [
+              {
+                system: "http://loinc.org",
+                code: "omega3_indice",
+                display: "Índice Omega-3"
+              }
+            ]
+          },
+          subject: {
+            reference: `Patient/${pacienteId}`
+          },
+          effectiveDateTime: formData.fecha_inicio,
+          valueQuantity: {
+            value: parseInt(formData.omega3_indice),
+            unit: "%",
+            system: "http://unitsofmeasure.org",
+            code: "%"
+          }
+        });
+      }
 
       // Crear bundle FHIR con todos los recursos
       const bundle = {
@@ -235,4 +287,4 @@ const SupplementHistoryForm = ({ pacienteId }) => {
   );
 };
 
-export default SupplementHistoryForm; 
+export default SupplementHistoryForm;

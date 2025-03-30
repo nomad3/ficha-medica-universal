@@ -60,7 +60,7 @@ const PacienteDetail = () => {
           )?.valueQuantity?.value || 0;
           
           const omega3 = observacionesRelacionadas.find(
-            obs => obs.code?.coding?.[0]?.code === 'omega3-index'
+            obs => obs.code?.coding?.[0]?.code === 'omega3_indice' || obs.code?.coding?.[0]?.code === 'omega3-index'
           )?.valueQuantity?.value || 0;
           
           return {
@@ -177,4 +177,4 @@ const PacienteDetail = () => {
   );
 };
 
-export default PacienteDetail; 
+export default PacienteDetail;

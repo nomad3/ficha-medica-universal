@@ -469,37 +469,48 @@ def obtener_medicaciones_paciente(patient_id: str, db: Session = Depends(get_db)
             else:
                 return []
         
-        # Get medication statements for the patient
-        # Assuming we have a table or relationship for medication/supplements
-        # This is a simplified example - modify according to your actual data model
-        medicamentos = []
+        # Get medication statements for the patient from the database
+        historiales = db.query(models.HistorialMedico).filter(
+            models.HistorialMedico.paciente_id == patient_uuid
+        ).all()
         
-        # For demonstration, create dummy medication statements
-        # Replace with actual database queries in your implementation
-        for i in range(3):  # Example: return 3 medications per patient
+        if not historiales:
+            return []
+            
+        # Convert to FHIR format
+        medicamentos = []
+        for historial in historiales:
             medicamentos.append({
                 "resourceType": "MedicationStatement",
-                "id": str(uuid.uuid4()),
+                "id": f"med-{historial.id}",
                 "status": "active",
                 "medicationCodeableConcept": {
                     "coding": [
                         {
-                            "system": "http://hl7.org/fhir/sid/ndc",
-                            "code": f"supp-{i+1}",
-                            "display": f"Suplemento {i+1}"
+                            "system": "http://suplementos.cl/codigo",
+                            "code": historial.suplemento,
+                            "display": historial.suplemento
                         }
                     ],
-                    "text": f"Suplemento {i+1}"
+                    "text": historial.suplemento
                 },
                 "subject": {
                     "reference": f"Patient/{patient_id}"
                 },
-                "effectiveDateTime": datetime.now().isoformat(),
+                "effectivePeriod": {
+                    "start": historial.fecha_inicio,
+                    "end": None
+                },
                 "dosage": [
                     {
-                        "text": f"1 cápsula {['diaria', 'cada 12 horas', 'cada 8 horas'][i % 3]}"
+                        "text": historial.dosis
                     }
-                ]
+                ],
+                "note": [
+                    {
+                        "text": historial.observaciones
+                    }
+                ] if historial.observaciones else None
             })
         
         return medicamentos
@@ -1411,4 +1422,4 @@ def procesar_medicacion_fhir(medicacion, db):
     except Exception as e:
         print(f"Error procesando medicación: {str(e)}")
         db.rollback()
-        return None 
+        return None

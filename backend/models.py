@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Text, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
-from database import Base  # Asegurar importación correcta
+from database import Base  # Importación corregida para Docker
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
 
@@ -63,4 +63,4 @@ class Medicacion(Base):
     dosis = Column(String(100))  # Información de dosificación
     
     # Relación con el paciente
-    paciente = relationship("Paciente", back_populates="medicaciones") 
+    paciente = relationship("Paciente", back_populates="medicaciones")

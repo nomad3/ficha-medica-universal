@@ -1,23 +1,885 @@
-body {
-  font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 20px;
+:root {
+  /* Light Theme Variables */
+  --bg-primary: #f7f7f7;
+  --bg-secondary: #fff;
+  --text-primary: #222;
+  --text-secondary: #717171;
+  --border-color: #e4e4e4;
+  --link-color: #007A87;
+  --link-hover-color: #005f6b; /* Darker teal */
+  --brand-color: #FF5A5F; /* Airbnb red */
+  --card-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --card-hover-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --card-hover-transform: translateY(-4px);
+  --tab-active-border: #222;
+  --button-secondary-bg: var(--bg-secondary);
+  --button-secondary-text: var(--text-secondary);
+  --button-secondary-border: var(--border-color);
+  --button-secondary-hover-bg: var(--bg-primary);
+  --button-secondary-hover-text: var(--text-primary);
+  --button-secondary-hover-border: var(--text-secondary);
+  --code-bg: #f0f0f0;
+  --code-text: #333;
 }
 
-nav ul {
+body.dark-mode {
+  /* Dark Theme Variable Overrides */
+  --bg-primary: #1a1a1a; /* Very dark grey */
+  --bg-secondary: #2c2c2c; /* Dark grey */
+  --text-primary: #e0e0e0; /* Light grey */
+  --text-secondary: #a0a0a0; /* Medium grey */
+  --border-color: #444; /* Darker border */
+  --link-color: #00a699; /* Brighter teal */
+  --link-hover-color: #00c4b4;
+  --brand-color: #FF7E82; /* Lighter red */
+  --card-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); /* Stronger shadow */
+  --card-hover-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --card-hover-transform: translateY(-2px); /* Less pronounced lift */
+  --tab-active-border: #e0e0e0;
+  --button-secondary-bg: var(--bg-secondary);
+  --button-secondary-text: var(--text-secondary);
+  --button-secondary-border: var(--border-color);
+  --button-secondary-hover-bg: var(--bg-primary);
+  --button-secondary-hover-text: var(--text-primary);
+  --button-secondary-hover-border: var(--text-secondary);
+  --code-bg: #111;
+  --code-text: #ccc;
+}
+
+/* Reset and Base Styles */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px; /* Base font size */
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  line-height: 1.6;
+  color: var(--text-primary); /* Use variable */
+  background-color: var(--bg-primary); /* Use variable */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition */
+}
+
+a {
+  color: var(--link-color); /* Use variable */
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+  color: var(--link-hover-color);
+}
+
+/* Container */
+.container {
+  max-width: 1120px; /* Common container width */
+  margin: 0 auto;
+  padding: 24px; /* Add padding around content */
+}
+
+/* Basic Card Styling */
+.card {
+  background-color: var(--bg-secondary); /* Use variable */
+  border: 1px solid var(--border-color); /* Use variable */
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: var(--card-shadow); /* Use variable */
+  transition: box-shadow 0.2s ease-in-out, background-color 0.3s ease, border-color 0.3s ease; /* Add transitions */
+}
+
+/* Utility Classes */
+.text-center { text-align: center; }
+.mt-1 { margin-top: 8px !important; }
+.mt-2 { margin-top: 16px !important; }
+.mt-3 { margin-top: 24px !important; }
+.mb-1 { margin-bottom: 8px !important; }
+.mb-2 { margin-bottom: 16px !important; }
+.mb-3 { margin-bottom: 24px !important; }
+.align-self-end { align-self: flex-end; }
+
+/* Remove default list styling */
+ul {
+  list-style: none;
+}
+
+/* General Loading/Error Message Styles */
+.loading-message,
+.error-message {
+  padding: 16px;
+  border-radius: 8px;
+  margin-top: 16px;
+  text-align: center;
+  border: 1px solid transparent;
+}
+
+.loading-message {
+  background-color: rgba(0, 122, 135, 0.1); /* Light teal background */
+  color: var(--link-color);
+  border-color: rgba(0, 122, 135, 0.2);
+}
+body.dark-mode .loading-message {
+  background-color: rgba(0, 166, 153, 0.15);
+  border-color: rgba(0, 166, 153, 0.3);
+}
+
+.error-message {
+  background-color: rgba(255, 90, 95, 0.1); /* Light red background */
+  color: var(--brand-color);
+  font-weight: 600;
+  border-color: rgba(255, 90, 95, 0.2);
+}
+body.dark-mode .error-message {
+   background-color: rgba(255, 126, 130, 0.15);
+   border-color: rgba(255, 126, 130, 0.3);
+}
+
+/* General Form Styles */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
+}
+.form-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  display: block;
+}
+.form-input,
+.form-select,
+.form-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--link-color);
+  box-shadow: 0 0 0 2px rgba(0, 122, 135, 0.2);
+}
+.form-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+.form-button {
+  padding: 12px 20px;
+  background-color: var(--link-color);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+  display: inline-block; /* Ensure button respects margins */
+  text-align: center;
+}
+.form-button:hover {
+  background-color: var(--link-hover-color);
+}
+.form-button--secondary {
+  background-color: var(--button-secondary-bg);
+  color: var(--button-secondary-text);
+  border: 1px solid var(--button-secondary-border);
+}
+.form-button--secondary:hover {
+  background-color: var(--button-secondary-hover-bg);
+  color: var(--button-secondary-hover-text);
+  border-color: var(--button-secondary-hover-border);
+}
+
+/* General Data Table Styling */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+}
+.data-table th,
+.data-table td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+.data-table th {
+  background-color: var(--bg-primary);
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+.data-table tbody tr:hover {
+  background-color: var(--bg-primary);
+}
+body.dark-mode .data-table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* General Widget Styles */
+.widget-title {
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 1.1rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 8px;
+  margin-bottom: 12px !important;
+}
+.widget-list {
   list-style: none;
   padding: 0;
+}
+.widget-list li {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+.widget-list li:last-child {
+  border-bottom: none;
+}
+.chart-placeholder {
+  height: 150px;
+  background-color: var(--bg-primary);
   display: flex;
-  gap: 20px;
-  background: #f0f0f0;
-  padding: 10px;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  border-radius: 8px;
+  border: 1px dashed var(--border-color);
 }
 
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
+/* Specific Component Styles will be added below */
+
+/* Paciente List Grid */
+.paciente-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Responsive grid */
+  gap: 24px; /* Spacing between cards */
+}
+.paciente-card-link {
+  text-decoration: none; /* Remove underline from link */
+  color: inherit; /* Inherit text color */
+}
+.paciente-card {
+  /* Inherits base .card styles */
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+.paciente-card:hover {
+  transform: var(--card-hover-transform); /* Use variable */
+  box-shadow: var(--card-hover-shadow); /* Use variable */
+}
+.paciente-card-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text-primary); /* Ensure text color uses variable */
+}
+.paciente-card-rut {
+  font-size: 0.9rem;
+  color: var(--text-secondary); /* Use variable */
+}
+/* Style for the 'no data' message on this page */
+.no-data-message {
+  padding: 24px;
+  text-align: center;
+  color: var(--text-secondary);
+  background-color: var(--bg-secondary);
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
 }
 
-li {
-  margin-bottom: 10px;
-} 
+/* Navbar Styles */
+/* Supplement History List Styles */
+.supplement-history-list {
+  /* Container for the list */
+}
+.history-entry.card {
+  padding: 16px; /* Smaller padding for list items */
+  background-color: var(--bg-primary); /* Slightly different background for distinction */
+  border-left: 4px solid var(--link-color); /* Add a colored left border */
+  margin-bottom: 16px !important; /* Override utility class */
+}
+.history-entry .entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 1.1rem;
+}
+.history-entry .suplemento-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.history-entry .fecha-inicio {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+.history-entry .entry-details p {
+  margin-bottom: 4px;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+.history-entry .entry-details p strong {
+  color: var(--text-secondary);
+  min-width: 100px; /* Align labels */
+  display: inline-block;
+}
+.history-entry .entry-biomarkers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px; /* Spacing between biomarkers */
+  padding-top: 12px;
+  margin-top: 12px;
+  border-top: 1px dashed var(--border-color); /* Separator line */
+  font-size: 0.9rem;
+}
+.history-entry .biomarker {
+  color: var(--text-secondary);
+}
+.history-entry .biomarker strong {
+  color: var(--text-primary);
+  margin-right: 4px;
+}
+
+/* Paciente Detail Styles */
+/* AI Recommendations Styles */
+.ai-recommendations-section {
+  /* Container for the whole AI section within the tab */
+}
+.ai-recommendations-section h4,
+.ai-recommendations-section h5 {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.recommendations-list.card,
+.explanation-section.card {
+  padding: 16px; /* Slightly smaller padding for inner cards */
+  background-color: var(--bg-primary); /* Differentiate from main card */
+}
+.recommendations-list ul {
+  padding-left: 20px; /* Indent list */
+  list-style: disc; /* Use standard bullets */
+}
+.recommendation-item {
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+.recommendation-type {
+  color: var(--text-primary);
+  font-weight: 600;
+  margin-right: 6px;
+}
+.recommendation-desc {
+  color: var(--text-secondary);
+}
+.explanation-text {
+  color: var(--text-primary);
+  line-height: 1.7;
+}
+
+/* Form Styles specific to Supplement History Form */
+/* Dashboard Grid Layout Styles */
+.dashboard-grid-layout {
+  /* Optional: Add specific styles for the grid container if needed */
+}
+.dashboard-widget.card {
+  /* Ensure cards within the grid don't have extra bottom margin */
+  margin-bottom: 0;
+  /* Allow content to scroll if it overflows the widget size */
+  overflow: auto;
+}
+/* Override react-grid-layout default styles if needed */
+.react-grid-item.react-grid-placeholder {
+  background: var(--link-color) !important;
+  opacity: 0.2 !important;
+  border-radius: 8px;
+}
+
+/* FHIR Viewer Styles */
+.fhir-viewer-section {
+  /* Container for the section */
+}
+.fhir-viewer-section h4 {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.resource-selector {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.resource-button {
+  padding: 8px 16px;
+  background-color: var(--bg-primary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.resource-button:hover {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--text-secondary);
+}
+.resource-button.active {
+  background-color: var(--link-color);
+  color: #fff;
+  border-color: var(--link-color);
+  font-weight: 600;
+}
+body.dark-mode .resource-button.active {
+  background-color: var(--link-hover-color);
+  border-color: var(--link-hover-color);
+}
+.resource-content.card {
+  padding: 16px;
+  background-color: var(--code-bg); /* Use code background */
+  max-height: 500px; /* Limit height */
+  overflow-y: auto; /* Add scroll if needed */
+  border-radius: 8px; /* Slightly smaller radius for code blocks */
+}
+.fhir-json-pre {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.85rem;
+  color: var(--code-text); /* Use code text color */
+  white-space: pre-wrap; /* Wrap long lines */
+  word-wrap: break-word; /* Break words if necessary */
+}
+.fhir-info {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  padding: 12px;
+  background-color: var(--bg-primary);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+.fhir-info strong {
+  color: var(--text-primary);
+}
+
+/* Supplement Optimization Styles */
+.supplement-optimization-section {
+  /* Container for the section */
+}
+.supplement-optimization-section h4,
+.supplement-optimization-section h5,
+.supplement-optimization-section h6 {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.optimization-form.card {
+  padding: 16px;
+  background-color: var(--bg-primary);
+}
+.supplement-plan-container {
+  /* Container for the generated plan */
+}
+.plan-header.card,
+.plan-considerations.card,
+.plan-detailed-explanation.card {
+  padding: 16px;
+  background-color: var(--bg-primary);
+}
+.plan-header p,
+.plan-considerations p {
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+.plan-header strong,
+.plan-considerations strong {
+  color: var(--text-secondary);
+  margin-right: 6px;
+}
+.supplements-list-container h5 {
+  margin-top: 16px;
+}
+.supplements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 8px;
+}
+.supplement-card {
+  padding: 12px;
+  border-left: 4px solid var(--link-color);
+  margin-bottom: 0 !important; /* Override base card margin */
+}
+.supplement-name {
+  font-size: 1.1rem;
+}
+.supplement-details p {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+.supplement-details strong {
+  color: var(--text-secondary);
+  min-width: 80px;
+  display: inline-block;
+}
+.supplement-justification {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border-color);
+}
+.supplement-justification strong {
+  color: var(--text-primary);
+}
+.plan-explanation-toggle,
+.plan-actions {
+  margin-top: 16px;
+}
+
+/* Anomaly Detection Styles */
+.anomaly-detection-section {
+  /* Container for the section */
+}
+.anomaly-detection-section h4,
+.anomaly-detection-section h5,
+.anomaly-detection-section h6 {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.analysis-summary.card {
+  padding: 16px;
+  background-color: var(--bg-primary);
+}
+.analysis-date {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+.analysis-date strong {
+  color: var(--text-primary);
+}
+.analysis-message {
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  text-align: center;
+  border: 1px solid transparent; /* Add border for consistency */
+}
+.message--warning {
+  background-color: rgba(255, 165, 0, 0.1); /* Light orange background */
+  color: #cc8400; /* Dark orange text */
+  border-color: rgba(255, 165, 0, 0.3);
+}
+body.dark-mode .message--warning {
+  background-color: rgba(255, 165, 0, 0.2);
+  color: #ffc966; /* Lighter orange for dark mode */
+  border-color: rgba(255, 165, 0, 0.4);
+}
+.message--success {
+  background-color: rgba(0, 128, 0, 0.1); /* Light green background */
+  color: #006400; /* Dark green text */
+  border-color: rgba(0, 128, 0, 0.3);
+}
+body.dark-mode .message--success {
+  background-color: rgba(0, 128, 0, 0.2);
+  color: #90ee90; /* Lighter green for dark mode */
+  border-color: rgba(0, 128, 0, 0.4);
+}
+.anomalies-list-container h5 {
+  margin-top: 16px;
+}
+.anomalies-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin-top: 8px;
+}
+.anomaly-card {
+  padding: 12px; /* Smaller padding for these cards */
+  border-left-width: 4px;
+  border-left-style: solid;
+  margin-bottom: 0 !important; /* Override base card margin */
+}
+.anomaly-card--alto {
+  border-left-color: #dc3545; /* Red for high */
+}
+body.dark-mode .anomaly-card--alto {
+  border-left-color: #f88; /* Lighter red for dark mode */
+}
+.anomaly-card--bajo {
+  border-left-color: #ffc107; /* Yellow/Orange for low */
+}
+body.dark-mode .anomaly-card--bajo {
+  border-left-color: #ffd56a; /* Lighter yellow/orange for dark mode */
+}
+.anomaly-biomarker {
+  font-size: 1.1rem;
+}
+.anomaly-value {
+  font-size: 1rem;
+  margin-bottom: 4px;
+}
+.anomaly-value strong {
+  font-weight: 700;
+}
+.anomaly-card--alto .anomaly-value strong,
+.anomaly-card--alto .anomaly-type {
+  color: #dc3545; /* Red */
+}
+body.dark-mode .anomaly-card--alto .anomaly-value strong,
+body.dark-mode .anomaly-card--alto .anomaly-type {
+  color: #f88; /* Lighter red */
+}
+.anomaly-card--bajo .anomaly-value strong,
+.anomaly-card--bajo .anomaly-type {
+  color: #cc8400; /* Dark Orange */
+}
+body.dark-mode .anomaly-card--bajo .anomaly-value strong,
+body.dark-mode .anomaly-card--bajo .anomaly-type {
+  color: #ffd56a; /* Lighter Orange */
+}
+.anomaly-range {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+.anomaly-recommendation {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+.anomaly-recommendation strong {
+  color: var(--text-secondary);
+  margin-right: 4px;
+}
+
+/* Predictive Trends Styles */
+.predictive-trends-section {
+  /* Container for the section */
+}
+.predictive-trends-section h4,
+.predictive-trends-section h5 {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.prediction-controls.card {
+  padding: 16px;
+  background-color: var(--bg-primary); /* Slightly different background */
+}
+.controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  align-items: end; /* Align items to the bottom */
+}
+.controls-grid .form-button {
+  height: fit-content; /* Adjust button height */
+}
+.predictions-results-container {
+  /* Container for summary and table */
+}
+.prediction-summary.card,
+.prediction-table-card.card {
+  padding: 16px;
+  background-color: var(--bg-primary); /* Differentiate inner cards */
+}
+.prediction-summary p {
+  margin-bottom: 8px;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+.prediction-summary strong {
+  color: var(--text-secondary);
+  margin-right: 6px;
+}
+.prediction-summary .current-value strong,
+.prediction-summary .trend strong {
+  min-width: 100px;
+  display: inline-block;
+}
+.prediction-summary .recommendation {
+  font-style: italic;
+  color: var(--link-color);
+}
+.prediction-summary .recommendation strong {
+  font-style: normal;
+  color: var(--text-secondary);
+  min-width: 100px;
+  display: inline-block;
+}
+
+.supplement-history-form.card {
+  padding: 24px; /* Standard card padding */
+  background-color: var(--bg-secondary); /* Ensure card background */
+}
+.supplement-history-form h4,
+.supplement-history-form h5 {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.supplement-history-form h5.form-section-title {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  border-top: 1px solid var(--border-color);
+  padding-top: 16px;
+}
+/* Adjust biomarker grid specifically if needed */
+.biomarker-grid {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Maybe smaller columns for numbers */
+}
+
+.paciente-detail.card {
+  padding: 32px; /* Slightly larger padding for detail view */
+}
+.paciente-header {
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 16px;
+  /* margin-bottom is handled by utility class mb-3 */
+}
+.back-link {
+  display: inline-block; /* Allow margin */
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  /* margin-bottom is handled by utility class mb-2 */
+}
+.back-link:hover {
+  color: var(--link-color);
+  text-decoration: none;
+}
+.paciente-detail-name {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+.paciente-detail-meta {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+.paciente-detail-meta span {
+  margin-right: 16px; /* Space between meta items */
+}
+/* Tab Styles */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  border-bottom: 1px solid var(--border-color);
+  /* margin-bottom handled by utility class mb-3 */
+}
+.tab-button {
+  padding: 12px 16px;
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s ease, border-color 0.2s ease;
+  margin-bottom: -1px; /* Align bottom border with container border */
+}
+.tab-button:hover {
+  color: var(--text-primary);
+}
+.tab-button.active {
+  color: var(--text-primary);
+  border-bottom-color: var(--tab-active-border);
+}
+.tab-content {
+  /* Styles for the content area */
+}
+.tab-pane {
+  padding-top: 16px; /* Add some space above tab content */
+}
+
+nav {
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  padding: 12px 0; /* Adjusted padding */
+  margin-bottom: 24px;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+nav .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.3rem;
+    color: var(--brand-color);
+    text-decoration: none;
+}
+.navbar-brand:hover {
+    text-decoration: none;
+    opacity: 0.9;
+}
+.navbar-right-section {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+.navbar-links {
+  display: flex;
+  gap: 24px;
+  padding: 0;
+  margin: 0; /* Ensure no default margin */
+  list-style: none; /* Ensure no list style */
+}
+.navbar-links li a {
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-decoration: none; /* Ensure no underline */
+    padding: 8px 0; /* Add some padding for click area */
+    border-bottom: 2px solid transparent; /* For active state indication */
+    transition: color 0.2s ease, border-color 0.2s ease;
+}
+.navbar-links li a:hover {
+    color: var(--link-color);
+    text-decoration: none; /* Ensure no underline on hover */
+}
+/* Add active link styling if using NavLink from react-router-dom */
+.navbar-links li a.active {
+    color: var(--text-primary);
+    border-bottom-color: var(--link-color);
+}
+
+/* Theme Toggle Button */
+.theme-toggle-button {
+  padding: 8px 12px;
+  background-color: var(--bg-primary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+.theme-toggle-button:hover {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--text-secondary);
+}

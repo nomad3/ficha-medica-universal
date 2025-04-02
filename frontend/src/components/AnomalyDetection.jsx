@@ -24,55 +24,62 @@ const AnomalyDetection = ({ pacienteId }) => {
     }
   };
 
-  const getAnomalyColor = (tipo) => {
-    return tipo === 'alto' ? 'red' : 'orange';
+  // Return CSS class modifier based on type
+  const getAnomalyClass = (tipo) => {
+    return tipo === 'alto' ? 'anomaly-card--alto' : 'anomaly-card--bajo'; // Assuming 'bajo' is the other type
   };
 
   return (
-    <div className="anomaly-detection">
-      <h3>Detección de Anomalías en Biomarcadores</h3>
-      
+    <div className="anomaly-detection-section"> {/* Section container */}
+      <h4 className="mb-2">Detección de Anomalías en Biomarcadores</h4>
+
       {!anomalies && !loading && (
-        <button onClick={detectAnomalies} className="btn-primary">
+        <button onClick={detectAnomalies} className="form-button"> {/* Consistent button */}
           Analizar Valores Anómalos
         </button>
       )}
-      
-      {loading && <p>Analizando datos y detectando anomalías...</p>}
-      
-      {error && <p className="error">{error}</p>}
-      
+
+      {/* Use consistent loading/error messages */}
+      {loading && <p className="loading-message mt-2">Analizando datos y detectando anomalías...</p>}
+      {error && <p className="error-message mt-2">{error}</p>}
+
       {anomalies && (
-        <div className="anomalies-results">
-          <p className="analysis-date">
-            <strong>Fecha de análisis:</strong> {anomalies.fecha_analisis}
-          </p>
-          
-          <p className={anomalies.anomalias.length > 0 ? 'message warning' : 'message success'}>
-            {anomalies.mensaje}
-          </p>
-          
+        <div className="anomalies-results-container mt-2">
+          <div className="analysis-summary card mb-2"> {/* Wrap summary in card */}
+            <p className="analysis-date mb-1">
+              <strong>Fecha de análisis:</strong> {anomalies.fecha_analisis ?? 'N/A'}
+            </p>
+            {/* Use specific classes for message styling */}
+            <p className={`analysis-message ${anomalies.anomalias.length > 0 ? 'message--warning' : 'message--success'}`}>
+              {anomalies.mensaje}
+            </p>
+          </div>
+
           {anomalies.anomalias.length > 0 ? (
-            <div className="anomalies-list">
-              <h4>Valores fuera de rango:</h4>
-              {anomalies.anomalias.map((anomaly, index) => (
-                <div key={index} className="anomaly-card" style={{borderColor: getAnomalyColor(anomaly.tipo)}}>
-                  <h5>{anomaly.biomarcador}</h5>
-                  <p className="anomaly-value" style={{color: getAnomalyColor(anomaly.tipo)}}>
-                    <strong>{anomaly.valor} {anomaly.unidad}</strong> 
-                    <span className="anomaly-type">({anomaly.tipo})</span>
-                  </p>
-                  <p className="normal-range">
-                    Rango normal: {anomaly.rango_normal}
-                  </p>
-                  <p className="recommendation">
-                    <strong>Recomendación:</strong> {anomaly.recomendacion}
-                  </p>
-                </div>
-              ))}
+            <div className="anomalies-list-container">
+              <h5 className="mb-1">Valores fuera de rango detectados:</h5>
+              <div className="anomalies-grid"> {/* Grid layout for anomaly cards */}
+                {anomalies.anomalias.map((anomaly, index) => (
+                  // Use card base class + modifier for type
+                  <div key={index} className={`card anomaly-card ${getAnomalyClass(anomaly.tipo)}`}>
+                    <h6 className="anomaly-biomarker mb-1">{anomaly.biomarcador ?? 'N/A'}</h6>
+                    <p className="anomaly-value">
+                      <strong>{anomaly.valor ?? 'N/A'} {anomaly.unidad ?? ''}</strong>
+                      <span className="anomaly-type"> ({anomaly.tipo ?? 'N/A'})</span>
+                    </p>
+                    <p className="anomaly-range">
+                      Rango normal: {anomaly.rango_normal ?? 'N/A'}
+                    </p>
+                    <p className="anomaly-recommendation mt-1">
+                      <strong>Recomendación:</strong> {anomaly.recomendacion ?? 'N/A'}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
           ) : (
-            <p className="no-anomalies">Todos los biomarcadores están dentro de rangos normales.</p>
+            // No specific message needed if handled by analysis-message
+            null
           )}
         </div>
       )}
@@ -80,4 +87,4 @@ const AnomalyDetection = ({ pacienteId }) => {
   );
 };
 
-export default AnomalyDetection; 
+export default AnomalyDetection;

@@ -38,34 +38,42 @@ const PacienteList = () => {
     fetchPacientes();
   }, []);
 
-  if (loading) return <div>Cargando pacientes...</div>;
-  if (error) return <div className="error">{error}</div>;
+  // Use consistent loading/error message styling
+  if (loading) return <div className="loading-message">Cargando pacientes...</div>;
+  if (error) return <div className="error-message">{error}</div>;
 
   return (
     <div>
-      <h2>Listado de Pacientes</h2>
+      <h2 className="mb-3">Listado de Pacientes</h2>
       {pacientes.length === 0 ? (
-        <p>No hay pacientes registrados</p>
+        <p className="no-data-message">No hay pacientes registrados</p> // Style this message too
       ) : (
-        <ul>
+        <div className="paciente-grid"> {/* Grid container */}
           {pacientes.map(paciente => {
             const id = paciente.id || '';
-            const rut = paciente.identifier && paciente.identifier[0] ? paciente.identifier[0].value : 'Sin RUT';
-            const nombre = paciente.name && paciente.name[0] && paciente.name[0].given ? paciente.name[0].given[0] : 'Sin nombre';
-            const apellido = paciente.name && paciente.name[0] ? paciente.name[0].family : 'Sin apellido';
-            
+            const rut = paciente.identifier?.[0]?.value ?? 'Sin RUT';
+            // Handle potential missing name parts gracefully
+            const nombreCompleto = [
+              paciente.name?.[0]?.given?.join(' '),
+              paciente.name?.[0]?.family
+            ].filter(Boolean).join(' ') || 'Nombre no disponible';
+
             return (
-              <li key={id}>
-                <Link to={`/pacientes/${id}`}>
-                  {nombre} {apellido} - RUT: {rut}
-                </Link>
-              </li>
+              <Link to={`/pacientes/${id}`} key={id} className="paciente-card-link"> {/* Link wraps the card */}
+                <div className="card paciente-card"> {/* Apply card class */}
+                  <h3 className="paciente-card-name">{nombreCompleto}</h3>
+                  <p className="paciente-card-rut">RUT: {rut}</p>
+                  {/* Add more details if available, e.g., age, gender */}
+                  {/* <p>Edad: {calculateAge(paciente.birthDate)}</p> */}
+                  {/* <p>Género: {paciente.gender}</p> */}
+                </div>
+              </Link>
             );
           })}
-        </ul>
+        </div>
       )}
     </div>
   );
 };
 
-export default PacienteList; 
+export default PacienteList;

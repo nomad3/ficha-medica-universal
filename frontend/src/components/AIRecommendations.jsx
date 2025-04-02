@@ -25,33 +25,36 @@ const AIRecommendations = ({ pacienteId }) => {
   };
 
   return (
-    <div className="ai-recommendations">
-      <h3>Recomendaciones Personalizadas con IA</h3>
-      
+    <div className="ai-recommendations-section"> {/* Use a specific class for the section */}
+      <h4 className="mb-2">Recomendaciones Personalizadas con IA</h4>
+
       {!recommendations && !loading && (
-        <button onClick={getRecommendations} className="btn-primary">
+        <button onClick={getRecommendations} className="form-button"> {/* Use consistent button style */}
           Generar Recomendaciones
         </button>
       )}
-      
-      {loading && <p>Analizando datos y generando recomendaciones...</p>}
-      
-      {error && <p className="error">{error}</p>}
-      
+
+      {/* Use consistent loading/error messages */}
+      {loading && <p className="loading-message mt-2">Analizando datos y generando recomendaciones...</p>}
+      {error && <p className="error-message mt-2">{error}</p>}
+
       {recommendations && (
-        <div className="recommendations-container">
-          <h4>Recomendaciones Sugeridas:</h4>
-          <ul>
-            {recommendations.recomendaciones.map((rec, index) => (
-              <li key={index}>
-                <strong>{rec.tipo}:</strong> {rec.descripcion}
-              </li>
-            ))}
-          </ul>
-          
-          <div className="explanation">
-            <h4>Análisis Detallado:</h4>
-            <p>{recommendations.explicacion}</p>
+        <div className="recommendations-content mt-2">
+          <div className="recommendations-list card mb-2"> {/* Wrap list in a card */}
+            <h5 className="mb-1">Recomendaciones Sugeridas:</h5>
+            <ul>
+              {recommendations.recomendaciones?.map((rec, index) => ( // Add safe navigation
+                <li key={index} className="recommendation-item mb-1">
+                  <strong className="recommendation-type">{rec.tipo}:</strong>
+                  <span className="recommendation-desc">{rec.descripcion}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="explanation-section card"> {/* Wrap explanation in a card */}
+            <h5 className="mb-1">Análisis Detallado:</h5>
+            <p className="explanation-text">{recommendations.explicacion}</p>
           </div>
         </div>
       )}
@@ -59,4 +62,4 @@ const AIRecommendations = ({ pacienteId }) => {
   );
 };
 
-export default AIRecommendations; 
+export default AIRecommendations;

@@ -59,64 +59,77 @@ const PredictiveTrends = ({ pacienteId }) => {
   };
 
   return (
-    <div className="predictive-trends">
-      <h3>Análisis Predictivo de Biomarcadores</h3>
-      
-      <div className="prediction-controls">
-        <div className="form-group">
-          <label>Biomarcador:</label>
-          <select 
-            value={selectedBiomarker} 
-            onChange={(e) => setSelectedBiomarker(e.target.value)}
-          >
-            {biomarkers.map(b => (
-              <option key={b.value} value={b.value}>{b.label}</option>
-            ))}
-          </select>
+    <div className="predictive-trends-section"> {/* Section container */}
+      <h4 className="mb-2">Análisis Predictivo de Biomarcadores</h4>
+
+      {/* Controls Section */}
+      <div className="prediction-controls card mb-3"> {/* Wrap controls in a card */}
+        <div className="controls-grid"> {/* Grid layout for controls */}
+          <div className="form-group">
+            <label className="form-label" htmlFor="biomarker-select">Biomarcador:</label>
+            <select
+              id="biomarker-select"
+              value={selectedBiomarker}
+              onChange={(e) => setSelectedBiomarker(e.target.value)}
+              className="form-select"
+            >
+              {biomarkers.map(b => (
+                <option key={b.value} value={b.value}>{b.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label" htmlFor="days-select">Días de predicción:</label>
+            <select
+              id="days-select"
+              value={predictionDays}
+              onChange={(e) => setPredictionDays(parseInt(e.target.value))}
+              className="form-select"
+            >
+              <option value={30}>30 días</option>
+              <option value={90}>90 días</option>
+              <option value={180}>180 días</option>
+            </select>
+          </div>
+
+          <button onClick={getPredictions} className="form-button align-self-end"> {/* Align button */}
+            Generar Predicción
+          </button>
         </div>
-        
-        <div className="form-group">
-          <label>Días de predicción:</label>
-          <select 
-            value={predictionDays} 
-            onChange={(e) => setPredictionDays(parseInt(e.target.value))}
-          >
-            <option value={30}>30 días</option>
-            <option value={90}>90 días</option>
-            <option value={180}>180 días</option>
-          </select>
-        </div>
-        
-        <button onClick={getPredictions} className="btn-primary">
-          Generar Predicción
-        </button>
       </div>
-      
-      {loading && <p>Analizando datos y generando predicciones...</p>}
-      
-      {error && <p className="error">{error}</p>}
-      
+
+      {/* Loading/Error Messages */}
+      {loading && <p className="loading-message mt-2">Analizando datos y generando predicciones...</p>}
+      {error && <p className="error-message mt-2">{error}</p>}
+
+      {/* Results Section */}
       {predictions && (
-        <div className="predictions-results">
-          <div className="prediction-summary">
-            <h4>
-              {getBiomarkerLabel(selectedBiomarker)}: {predictions.valor_actual} {getBiomarkerUnit(selectedBiomarker)}
-            </h4>
-            <p>
-              <strong>Tendencia:</strong> {getTrendEmoji()} {predictions.tendencia.replace('_', ' ')}
+        <div className="predictions-results-container mt-2">
+          {/* Summary Card */}
+          <div className="prediction-summary card mb-2">
+            <h5 className="mb-1">
+              Resumen: {getBiomarkerLabel(selectedBiomarker)}
+            </h5>
+            <p className="current-value">
+              <strong>Valor Actual:</strong> {predictions.valor_actual ?? 'N/A'} {getBiomarkerUnit(selectedBiomarker)}
+            </p>
+            <p className="trend">
+              <strong>Tendencia:</strong> {getTrendEmoji()} {predictions.tendencia?.replace('_', ' ') ?? 'N/A'}
             </p>
             <p className="recommendation">
-              <strong>Recomendación:</strong> {predictions.recomendacion}
+              <strong>Recomendación:</strong> {predictions.recomendacion ?? 'N/A'}
             </p>
           </div>
-          
-          <div className="prediction-table">
-            <h4>Valores Proyectados</h4>
-            <table>
+
+          {/* Projections Table Card */}
+          <div className="prediction-table-card card">
+            <h5 className="mb-1">Valores Proyectados ({predictionDays} días)</h5>
+            <table className="data-table"> {/* Add class for styling */}
               <thead>
                 <tr>
                   <th>Fecha</th>
-                  <th>Valor Proyectado</th>
+                  <th>Valor ({getBiomarkerUnit(selectedBiomarker)})</th>
                 </tr>
               </thead>
               <tbody>
@@ -135,4 +148,4 @@ const PredictiveTrends = ({ pacienteId }) => {
   );
 };
 
-export default PredictiveTrends; 
+export default PredictiveTrends;

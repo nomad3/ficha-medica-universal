@@ -9,7 +9,7 @@ from sqlalchemy import event
 from sqlalchemy.exc import OperationalError
 import time
 from datetime import datetime, timedelta
-import openai
+import openai # Use old import
 import os
 import numpy as np
 from sklearn.linear_model import LinearRegression
@@ -121,7 +121,7 @@ app.add_middleware(
 )
 
 # Configurar OpenAI (asegúrate de tener la variable de entorno OPENAI_API_KEY)
-openai.api_key = os.getenv("OPENAI_API_KEY")
+openai.api_key = os.getenv("OPENAI_API_KEY") # Use old configuration
 
 def wait_for_db():
     max_retries = 5
@@ -770,7 +770,7 @@ def procesar_paciente_fhir(resource, db):
         raise
 
 class AIRecommendationRequest(BaseModel):
-    paciente_id: int
+    paciente_id: str # Changed from int to str
 
 class AIRecommendationResponse(BaseModel):
     recomendaciones: List[Dict[str, str]]
@@ -812,7 +812,7 @@ async def obtener_recomendaciones_ia(request: AIRecommendationRequest, db: Sessi
     }
     
     try:
-        # Llamada a la API de OpenAI
+        # Llamada a la API de OpenAI using the old syntax
         response = openai.ChatCompletion.create(
             model="gpt-4",
             messages=[
@@ -855,10 +855,10 @@ class PredictiveTrendRequest(BaseModel):
     dias_prediccion: int = 90
 
 class AnomalyDetectionRequest(BaseModel):
-    paciente_id: int
+    paciente_id: str # Changed from int to str
 
 class SupplementOptimizationRequest(BaseModel):
-    paciente_id: int
+    paciente_id: str # Changed from int to str
     objetivo: Optional[str] = None  # Si se quiere sobreescribir el objetivo actual
 
 # Endpoints de IA adicionales
@@ -1079,7 +1079,7 @@ async def optimizar_suplementos(
         }
     
     try:
-        # Llamada a la API de OpenAI
+        # Llamada a la API de OpenAI using the old syntax
         response = openai.ChatCompletion.create(
             model="gpt-4",
             messages=[

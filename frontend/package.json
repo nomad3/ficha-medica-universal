@@ -10,7 +10,9 @@
     "@mui/material": "^5.14.2",
     "react-scripts": "5.0.1",
     "chart.js": "^4.3.0",
-    "react-chartjs-2": "^5.2.0"
+    "react-chartjs-2": "^5.2.0",
+    "react-grid-layout": "^1.4.4",  
+    "react-resizable": "^3.0.5"   
   },
   "scripts": {
     "start": "react-scripts start",
@@ -35,4 +37,4 @@
       "last 1 safari version"
     ]
   }
-} 
+}

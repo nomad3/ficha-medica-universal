@@ -87,90 +87,111 @@ const PacienteDetail = () => {
     fetchData();
   }, [id]);
 
-  if (loading) return <div>Cargando datos del paciente...</div>;
-  if (error) return <div className="error">{error}</div>;
-  if (!paciente) return <div>No se encontró el paciente</div>;
+  // Use consistent loading/error messages
+  if (loading) return <div className="loading-message">Cargando datos del paciente...</div>;
+  if (error) return <div className="error-message">{error}</div>;
+  if (!paciente) return <div className="card"><p>No se encontró el paciente</p></div>; // Wrap message in card
+
+  // Combine name parts safely
+  const nombreCompleto = [
+    paciente.name?.[0]?.given?.join(' '),
+    paciente.name?.[0]?.family
+  ].filter(Boolean).join(' ') || 'Nombre no disponible';
 
   return (
-    <div className="paciente-detail">
-      <div className="paciente-header">
-        <h2>
-          {paciente.name?.[0]?.given?.[0] || ''} {paciente.name?.[0]?.family || ''}
+    <div className="paciente-detail card"> {/* Apply card class to the main container */}
+      <div className="paciente-header mb-3"> {/* Add margin bottom */}
+        <Link to="/" className="back-link mb-2">← Volver a la lista</Link> {/* Style back link */}
+        <h2 className="paciente-detail-name">
+          {nombreCompleto}
         </h2>
-        <p>RUT: {paciente.identifier?.[0]?.value || 'No disponible'}</p>
-        <p>Fecha de nacimiento: {paciente.birthDate || 'No disponible'}</p>
-        <Link to="/" className="back-link">← Volver a la lista</Link>
+        <div className="paciente-detail-meta"> {/* Group meta info */}
+          <span>RUT: {paciente.identifier?.[0]?.value || 'No disponible'}</span>
+          <span>Fecha de nacimiento: {paciente.birthDate || 'No disponible'}</span>
+        </div>
       </div>
-      
-      <div className="tabs">
-        <button 
-          className={activeTab === 'historial' ? 'active' : ''} 
+
+      {/* Tab Navigation */}
+      <div className="tabs mb-3">
+        <button
+          className={`tab-button ${activeTab === 'historial' ? 'active' : ''}`}
           onClick={() => setActiveTab('historial')}
         >
-          Historial de Suplementos
+          Historial
         </button>
-        <button 
-          className={activeTab === 'recomendaciones' ? 'active' : ''} 
+        <button
+          className={`tab-button ${activeTab === 'recomendaciones' ? 'active' : ''}`}
           onClick={() => setActiveTab('recomendaciones')}
         >
-          Recomendaciones IA
+          Recomendaciones
         </button>
-        <button 
-          className={activeTab === 'predicciones' ? 'active' : ''} 
+        <button
+          className={`tab-button ${activeTab === 'predicciones' ? 'active' : ''}`}
           onClick={() => setActiveTab('predicciones')}
         >
-          Tendencias Predictivas
+          Tendencias
         </button>
-        <button 
-          className={activeTab === 'anomalias' ? 'active' : ''} 
+        <button
+          className={`tab-button ${activeTab === 'anomalias' ? 'active' : ''}`}
           onClick={() => setActiveTab('anomalias')}
         >
-          Detección de Anomalías
+          Anomalías
         </button>
-        <button 
-          className={activeTab === 'optimizacion' ? 'active' : ''} 
+        <button
+          className={`tab-button ${activeTab === 'optimizacion' ? 'active' : ''}`}
           onClick={() => setActiveTab('optimizacion')}
         >
-          Optimización de Suplementos
+          Optimización
         </button>
-        <button 
-          className={activeTab === 'fhir' ? 'active' : ''} 
+        <button
+          className={`tab-button ${activeTab === 'fhir' ? 'active' : ''}`}
           onClick={() => setActiveTab('fhir')}
         >
           Datos FHIR
         </button>
       </div>
-      
+
+      {/* Tab Content Area */}
       <div className="tab-content">
         {activeTab === 'historial' && (
-          <div>
+          <div className="tab-pane"> {/* Add class for potential tab-specific padding/margins */}
             <SupplementHistoryForm pacienteId={id} />
             <SupplementHistoryList data={historial} />
           </div>
         )}
-        
+
         {activeTab === 'recomendaciones' && (
-          <AIRecommendations pacienteId={id} />
+          <div className="tab-pane">
+            <AIRecommendations pacienteId={id} />
+          </div>
         )}
-        
+
         {activeTab === 'predicciones' && (
-          <PredictiveTrends pacienteId={id} />
+          <div className="tab-pane">
+            <PredictiveTrends pacienteId={id} />
+          </div>
         )}
-        
+
         {activeTab === 'anomalias' && (
-          <AnomalyDetection pacienteId={id} />
+          <div className="tab-pane">
+            <AnomalyDetection pacienteId={id} />
+          </div>
         )}
-        
+
         {activeTab === 'optimizacion' && (
-          <SupplementOptimization pacienteId={id} />
+          <div className="tab-pane">
+            <SupplementOptimization pacienteId={id} />
+          </div>
         )}
-        
+
         {activeTab === 'fhir' && (
-          <FHIRViewer 
-            paciente={paciente} 
-            observaciones={observaciones || []} 
-            medicamentos={medicamentos || []} 
-          />
+          <div className="tab-pane">
+            <FHIRViewer
+              paciente={paciente}
+              observaciones={observaciones || []}
+              medicamentos={medicamentos || []}
+            />
+          </div>
         )}
       </div>
     </div>
